@@ -38,7 +38,10 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 planilhas/*
 !planilhas/.gitkeep
 
+# venv
 .venv
 venv
 myvenv
+.venv/
+venv/
 
