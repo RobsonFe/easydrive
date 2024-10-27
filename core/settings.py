@@ -31,7 +31,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-AUTH_USER_MODEL = 'api.model.user_model.User'
+# AUTH_USER_MODEL = 'api.model.user_model.User'
 
 
 # Application definition

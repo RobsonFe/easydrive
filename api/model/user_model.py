@@ -2,11 +2,13 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, username, name, password=None):
+    def create_user(self, email, username, name, password):
         if not email:
             raise ValueError('Usuários devem ter um endereço de email.')
         if not username:
             raise ValueError('Usuários devem ter um nome de usuário.')
+        if not password:
+            raise ValueError('Usuários devem ter uma senha.')
         
         user = self.model(
             email=self.normalize_email(email),
@@ -14,10 +16,10 @@ class UserManager(BaseUserManager):
             name=name,
         )
         user.set_password(password)
-        user.save(using=self._db)
+        user.save()
         return user
 
-    def create_superuser(self, email, username, name, password=None):
+    def create_superuser(self, email, username, name, password):
         user = self.create_user(
             email=email,
             username=username,
@@ -25,7 +27,7 @@ class UserManager(BaseUserManager):
             password=password,
         )
         user.is_admin = True
-        user.save(using=self._db)
+        user.save()
         return user
 
 class User(AbstractBaseUser):
