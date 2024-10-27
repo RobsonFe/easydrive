@@ -26,7 +26,8 @@ class UserManager(BaseUserManager):
             name=name,
             password=password,
         )
-        user.is_admin = True
+        user.is_superuser = True
+        user.is_staff = True 
         user.save()
         return user
 
@@ -36,7 +37,8 @@ class User(AbstractBaseUser):
     email = models.EmailField(unique=True, blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_admin = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False) 
+    is_staff = models.BooleanField(default=False)  
     
     objects = UserManager()
     

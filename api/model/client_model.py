@@ -1,6 +1,7 @@
 from uuid import uuid4
 from django.db import models
 from django.conf import settings
+from api.model.rent_model import Rental
 from api.model.user_model import User
 
 class Client(models.Model):
@@ -10,3 +11,7 @@ class Client(models.Model):
     
     def __str__(self):
         return self.user.email
+    
+    @property
+    def total_rentals(self):
+        return Rental.objects.filter(client=self).count()

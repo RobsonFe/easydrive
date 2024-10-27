@@ -36,6 +36,8 @@ class Rental(models.Model):
         # Validar o objeto antes de salvar
         self.full_clean()
         super(Rental, self).save(*args, **kwargs)
+        self.vehicle.is_available = not self.returned
+        self.vehicle.save()
 
     def __str__(self):
         return f"Aluguel de {self.vehicle} por {self.client.user.name}"
