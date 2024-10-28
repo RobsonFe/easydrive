@@ -3,17 +3,7 @@ from uuid import uuid4
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from api.model.client_model import Client
-
-class Vehicle(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    brand = models.CharField(max_length=100)
-    model = models.CharField(max_length=100)
-    year = models.PositiveIntegerField()
-    is_available = models.BooleanField(default=True)
-    
-    def __str__(self):
-        return f"{self.brand} {self.model} ({self.year})"
-
+from api.model.vehicle_model import Vehicle
 
 class Rental(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
@@ -41,4 +31,3 @@ class Rental(models.Model):
 
     def __str__(self):
         return f"Aluguel de {self.vehicle} por {self.client.user.name}"
-

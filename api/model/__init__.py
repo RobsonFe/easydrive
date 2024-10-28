@@ -1,6 +1,7 @@
 from .user_model import User, BaseUserManager,UserManager
 from .client_model import Client
-from .rent_model import  Rent, RentManager
+from .vehicle_model import Vehicle
+from .rent_model import Rental
 
 
 __All__ = [
@@ -8,6 +9,6 @@ __All__ = [
     "BaseUserManager",
     "UserManager",
     "Client",
+    "Vehicle",
     "Rent",
-    "RentManager",
 ]
