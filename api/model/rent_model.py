@@ -2,12 +2,11 @@ from django.db import models
 from uuid import uuid4
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from api.model.client_model import Client
 from api.model.vehicle_model import Vehicle
 
 class Rental(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    client = models.ForeignKey('api.Client', on_delete=models.CASCADE) 
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
@@ -15,10 +14,10 @@ class Rental(models.Model):
 
     # Validação das datas, um dos requisitos do cliente.
     def clean(self):
-        # O end_date não seja menor que a start_date
+        # O end_date não pode ser menor que a start_date
         if self.end_date < self.start_date:
             raise ValidationError('A data de término do aluguel não pode ser anterior à data de início.')
-        # O start_date não esteja no passado
+        # O start_date não pode estar no passado
         if self.start_date < timezone.now():
             raise ValidationError('A data de início do aluguel não pode ser no passado.')
 

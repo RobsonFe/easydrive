@@ -1,7 +1,7 @@
 from uuid import uuid4
 from django.db import models
 from django.conf import settings
-from api.model.vehicle_model import Rental
+from api.model.rent_model import Rental
 from api.model.user_model import User
 
 class Client(models.Model):
@@ -13,5 +13,5 @@ class Client(models.Model):
         return self.user.email
     
     @property
-    def total_rentals(self):
+    def total_rentals_count(self):
         return Rental.objects.filter(client=self).count()
