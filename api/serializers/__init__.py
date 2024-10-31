@@ -1,4 +1,4 @@
-from .client_serializer import ClientSerializer
+from .client_serializer import ClientDetailsSerializer
 from .user_serializer import UserSerializer
 
 
