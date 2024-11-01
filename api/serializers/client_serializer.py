@@ -37,4 +37,4 @@ class RentListSerializer(serializers.ModelSerializer):
     vehicle_data = VehicleSerializer(source = 'vehicle')
     class Meta:
         model = Rental
-        fields =  ['id','start_date', 'end_date', 'client_data', 'vehicle_data',]
+        fields =  ['id','start_date', 'end_date', 'client_data', 'vehicle_data']
