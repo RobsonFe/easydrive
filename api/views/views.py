@@ -1,12 +1,18 @@
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
+from api import serializers
 from api.build.client_builder import ClientBuilder
+from api.build.rent_builder import RentBuilder
 from api.build.user_builder import UserBuilder
+from api.build.vehicle_builder import VehicleBuilder
 from api.model.client_model import Client
+from api.model.rent_model import Rental
 from api.model.user_model import User
-from api.serializers.client_serializer import ClientDetailsSerializer, ClientSerializer
+from api.model.vehicle_model import Vehicle
+from api.serializers.client_serializer import ClientDetailsSerializer, ClientSerializer, RentListSerializer, RentSerializer, VehicleSerializer
 from api.serializers.user_serializer import UserSerializer, UserListSerializer
+from django.utils.dateparse import parse_date
 
 
 class UserCreateView(generics.CreateAPIView):
@@ -129,4 +135,95 @@ class ClientListView(generics.ListAPIView):
         serializer = self.get_serializer(clients, many=True)
         return Response({"message": "Dados do Cliente", "result": serializer.data}, status=status.HTTP_200_OK)
 
+class RentCreateView(generics.CreateAPIView):
+    queryset = Rental.objects.all()
+    serializer_class = RentSerializer
+
+    def post(self, request, *args, **kwargs):
+        client_id = request.data.get("client")
+        vehicle_id = request.data.get("vehicle")
+        start_date_str = request.data.get("start_date")
+        end_date_str = request.data.get("end_date")
+
+        try:
+            client = Client.objects.get(id=client_id)
+            vehicle = Vehicle.objects.get(id=vehicle_id)
+
+            start_date = parse_date(start_date_str)
+            end_date = parse_date(end_date_str)
+
+            if not start_date or not end_date:
+                return Response({"error": "Formato de data inválido."}, status=status.HTTP_400_BAD_REQUEST)
+
+            builder = RentBuilder()
+            rental = (builder
+                      .set_client(client)
+                      .set_vehicle(vehicle)
+                      .set_start_date(start_date)
+                      .set_end_date(end_date)
+                      .build())
+            
+            rental.save() 
+
+            serializer = self.get_serializer(rental)
+            return Response({"message": "Aluguel criado com sucesso!", "result": serializer.data},
+                            status=status.HTTP_201_CREATED)
+        except Client.DoesNotExist:
+            return Response({"error": "Cliente não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        except Vehicle.DoesNotExist:
+            return Response({"error": "Veículo não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": f"Erro ao criar aluguel: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class RentListView(generics.ListAPIView):
+    queryset = Rental.objects.all()
+    serializer_class = RentListSerializer
     
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+    
+    
+class VehicleCreateView(generics.CreateAPIView):
+    queryset = Vehicle.objects.all()
+    serializer_class = VehicleSerializer
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            brand = request.data.get("brand")
+            model = request.data.get("model")
+            year = request.data.get("year")
+            
+            builder = VehicleBuilder()
+            
+            vehicle = (
+                builder.set_brand(brand)
+                .set_model(model)
+                .set_year(year)
+                .build()
+            )
+            
+            vehicle.save()
+            
+            serializer = self.get_serializer(vehicle)
+
+            return Response({"message": "Veículo criado com sucesso!", "result": serializer.data}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return  Response({"message": "Erro ao criar veículo!", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+
+class RentDeleteView(generics.DestroyAPIView):
+    queryset = Rental.objects.all()
+    serializer_class = RentSerializer
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            rental = self.get_object()  
+            rental.delete()  
+            return Response({"message": "Aluguel excluído com sucesso!"}, status=status.HTTP_204_NO_CONTENT)
+        except Rental.DoesNotExist:
+            return Response({"error": "Aluguel não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"Erro ao excluir aluguel: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
