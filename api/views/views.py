@@ -13,7 +13,11 @@ from api.model.vehicle_model import Vehicle
 from api.serializers.client_serializer import ClientDetailsSerializer, ClientSerializer, RentListSerializer, RentSerializer, VehicleSerializer
 from api.serializers.user_serializer import UserSerializer, UserListSerializer
 from django.utils.dateparse import parse_date
+import logging
+import json
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class UserCreateView(generics.CreateAPIView):
     serializer_class = UserSerializer
@@ -36,6 +40,9 @@ class UserCreateView(generics.CreateAPIView):
                     .build())
             
             serializer = self.get_serializer(user)
+            
+            logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
+            
             return Response({"message": "Usuário criado com sucesso!", "result": serializer.data}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return  Response({"message": "Erro ao criar usuário!", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -61,6 +68,9 @@ class UserUpdateView(generics.UpdateAPIView):
             user.save()
             
             serializer = self.get_serializer(user)
+            
+            logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
+            
             return Response({"message": "Usuário atualizado com sucesso!", "result": serializer.data}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"message": "Erro ao atualizar usuário!", "error": str(e)}, status.HTTP_400_BAD_REQUEST)
@@ -92,6 +102,9 @@ class ClientCreateView(generics.CreateAPIView):
         )
         
         serializer = self.get_serializer(client)
+        
+        logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
+        
         return Response({"message": "Cliente criado com sucesso!", "result": serializer.data }, status=status.HTTP_201_CREATED)
 
 
@@ -122,6 +135,8 @@ class ClientDetailView(generics.RetrieveAPIView):
         try:
             client = self.get_queryset().get(id=client_id)
             serializer = self.get_serializer(client)
+            logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
+            
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Client.DoesNotExist:
             return Response({'error': 'Cliente não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
@@ -133,6 +148,9 @@ class ClientListView(generics.ListAPIView):
     def get(self, request, *args, **kwargs):
         clients = Client.objects.all()
         serializer = self.get_serializer(clients, many=True)
+        
+        logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
+        
         return Response({"message": "Dados do Cliente", "result": serializer.data}, status=status.HTTP_200_OK)
 
 class RentCreateView(generics.CreateAPIView):
@@ -166,6 +184,8 @@ class RentCreateView(generics.CreateAPIView):
             rental.save() 
 
             serializer = self.get_serializer(rental)
+            logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
+            
             return Response({"message": "Aluguel criado com sucesso!", "result": serializer.data},
                             status=status.HTTP_201_CREATED)
         except Client.DoesNotExist:
@@ -208,6 +228,8 @@ class VehicleCreateView(generics.CreateAPIView):
             vehicle.save()
             
             serializer = self.get_serializer(vehicle)
+            
+            logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
 
             return Response({"message": "Veículo criado com sucesso!", "result": serializer.data}, status=status.HTTP_201_CREATED)
         except Exception as e:
