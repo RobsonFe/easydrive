@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
@@ -26,10 +27,17 @@ class UserCreateView(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         
         try:
+            if UserSerializer.objects.filter(email=email).exists():
+                return JsonResponse({'error': 'O E-mail informado está em uso'}, status=400)
+            
+            if UserSerializer.objects.filter(username=username).exists():
+                return JsonResponse({'error': 'O username informado está em uso'}, status=400)
+            
             username = request.data.get('username')
             name = request.data.get('name')
             email = request.data.get('email')
             password = request.data.get('password')
+            
             
             builder = UserBuilder()
             user = (builder
@@ -56,6 +64,12 @@ class UserUpdateView(generics.UpdateAPIView):
         try:
             # Recupera o usuário existente usando a chave primária (pk) do objeto que está sendo atualizado
             user = self.get_object()
+            
+            if UserSerializer.objects.filter(email=email).exists():
+                return JsonResponse({'error': 'O E-mail informado está em uso'}, status=400)
+            
+            if UserSerializer.objects.filter(username=username).exists():
+                return JsonResponse({'error': 'O username informado está em uso'}, status=400)
             
             username = request.data.get('username')
             name = request.data.get('name')
@@ -199,12 +213,26 @@ class RentCreateView(generics.CreateAPIView):
         
 
 class RentListView(generics.ListAPIView):
-    queryset = Rental.objects.all()
+    queryset = Rental.objects.all().order_by('start_date')
     serializer_class = RentListSerializer
     
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
     
+
+class VehicleListView(generics.ListAPIView):
+    queryset = Vehicle.objects.all().order_by('brand')
+    serializer_class = VehicleSerializer
+    
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+    
+class VehicleListIsNotAvailableView(generics.ListAPIView):
+    queryset = Vehicle.objects.all().order_by('brand').filter(is_available=False)
+    serializer_class = VehicleSerializer
+    
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
     
 class VehicleCreateView(generics.CreateAPIView):
     queryset = Vehicle.objects.all()
@@ -212,6 +240,9 @@ class VehicleCreateView(generics.CreateAPIView):
     
     def post(self, request, *args, **kwargs):
         try:
+            if VehicleSerializer.objects.filter(model=model).exists():
+                return JsonResponse({'error': 'O modelo do carro já está registrado.'}, status=400)
+            
             brand = request.data.get("brand")
             model = request.data.get("model")
             year = request.data.get("year")
