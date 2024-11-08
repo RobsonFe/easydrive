@@ -1,4 +1,4 @@
-from .views import ClientCreateView, UserCreateView, VehicleCreateView, RentCreateView, UserListView, ClientListView, ClientDetailView, ClientWithUserView, RentListView, UserUpdateView, RentDeleteView, VehicleDeleteView, VehicleListView
+from .views import ClientCreateView, UserCreateView, VehicleCreateView, RentCreateView, UserListView, ClientListView, ClientDetailView, ClientWithUserView, RentListView, UserUpdateView, RentDeleteView, VehicleDeleteView, VehicleListView, VehicleListByCarView, VehicleListByMotoView
 
 __All__ = [
     "ClientCreateView",
@@ -13,5 +13,7 @@ __All__ = [
     "UserUpdateView",
     "RentDeleteView",
     "VehicleDeleteView",
-    "VehicleListView"
+    "VehicleListView",
+    "VehicleListByCarView",
+    "VehicleListByMotoView"
 ]

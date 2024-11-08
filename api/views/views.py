@@ -27,17 +27,16 @@ class UserCreateView(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         
         try:
-            if UserSerializer.objects.filter(email=email).exists():
-                return JsonResponse({'error': 'O E-mail informado está em uso'}, status=400)
-            
-            if UserSerializer.objects.filter(username=username).exists():
-                return JsonResponse({'error': 'O username informado está em uso'}, status=400)
-            
             username = request.data.get('username')
             name = request.data.get('name')
             email = request.data.get('email')
             password = request.data.get('password')
             
+            if UserSerializer.objects.filter(email=email).exists():
+                return Response({'error': 'O E-mail informado está em uso'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if UserSerializer.objects.filter(username=username).exists():
+                return Response({'error': 'O username informado está em uso'}, status=status.HTTP_400_BAD_REQUEST)
             
             builder = UserBuilder()
             user = (builder
@@ -65,15 +64,15 @@ class UserUpdateView(generics.UpdateAPIView):
             # Recupera o usuário existente usando a chave primária (pk) do objeto que está sendo atualizado
             user = self.get_object()
             
-            if UserSerializer.objects.filter(email=email).exists():
-                return JsonResponse({'error': 'O E-mail informado está em uso'}, status=400)
-            
-            if UserSerializer.objects.filter(username=username).exists():
-                return JsonResponse({'error': 'O username informado está em uso'}, status=400)
-            
             username = request.data.get('username')
             name = request.data.get('name')
             email = request.data.get('email')
+            
+            if UserSerializer.objects.filter(email=email).exists():
+                return Response({'error': 'O E-mail informado está em uso'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if UserSerializer.objects.filter(username=username).exists():
+                return Response({'error': 'O username informado está em uso'}, status=status.HTTP_400_BAD_REQUEST)
             
             user.username = username or user.username
             user.name = name or user.name
@@ -234,21 +233,36 @@ class VehicleListIsNotAvailableView(generics.ListAPIView):
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
     
+class VehicleListByCarView(generics.ListAPIView):
+    queryset = Vehicle.objects.all().order_by('brand').filter(type_vehicle=TypeVehicle.CAR)
+    serializer_class = VehicleSerializer
+    
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+class VehicleListByMotoView(generics.ListAPIView):
+    queryset = Vehicle.objects.all().order_by('brand').filter(type_vehicle=TypeVehicle.MOTORCYCLE)
+    serializer_class = VehicleSerializer
+    
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 class VehicleCreateView(generics.CreateAPIView):
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
     
     def post(self, request, *args, **kwargs):
         try:
-            if VehicleSerializer.objects.filter(model=model).exists():
-                return JsonResponse({'error': 'O modelo do carro já está registrado.'}, status=400)
-            
             brand = request.data.get("brand")
             model = request.data.get("model")
             year = request.data.get("year")
             quantity = request.data.get("quantity")
             type_vehicle = request.data.get("type_vehicle", TypeVehicle.CAR)
+            description = request.data.get("description")
             
+            if Vehicle.objects.filter(model=model).exists():
+                return Response(
+                    {'error': 'O modelo do veículo já está registrado.'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             
             builder = VehicleBuilder()
             
@@ -258,6 +272,7 @@ class VehicleCreateView(generics.CreateAPIView):
                 .set_year(year)
                 .set_quantity(quantity)
                 .set_type_vehicle(type_vehicle) 
+                .set_description(description)
                 .build()
             )
             

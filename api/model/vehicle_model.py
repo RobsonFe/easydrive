@@ -11,7 +11,8 @@ class Vehicle(models.Model):
     model = models.CharField(max_length=100)
     year = models.PositiveIntegerField()
     quantity = models.PositiveIntegerField(default=0)
-    type_vehicle = models.CharField(max_length=10, choices=TypeVehicle.choices, default=TypeVehicle.CAR)    
+    type_vehicle = models.CharField(max_length=10, choices=TypeVehicle.choices, default=TypeVehicle.CAR)
+    description = models.TextField(blank=True)    
     is_available = models.BooleanField(default=True)
     
     def __str__(self):
