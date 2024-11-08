@@ -9,7 +9,7 @@ from api.build.vehicle_builder import VehicleBuilder
 from api.model.client_model import Client
 from api.model.rent_model import Rental
 from api.model.user_model import User
-from api.model.vehicle_model import Vehicle
+from api.model.vehicle_model import TypeVehicle, Vehicle
 from api.serializers.client_serializer import ClientDetailsSerializer, ClientSerializer, RentListSerializer, RentSerializer, VehicleSerializer
 from api.serializers.user_serializer import UserSerializer, UserListSerializer
 from django.utils.dateparse import parse_date
@@ -215,6 +215,9 @@ class VehicleCreateView(generics.CreateAPIView):
             brand = request.data.get("brand")
             model = request.data.get("model")
             year = request.data.get("year")
+            quantity = request.data.get("quantity")
+            type_vehicle = request.data.get("type_vehicle", TypeVehicle.CAR)
+            
             
             builder = VehicleBuilder()
             
@@ -222,6 +225,8 @@ class VehicleCreateView(generics.CreateAPIView):
                 builder.set_brand(brand)
                 .set_model(model)
                 .set_year(year)
+                .set_quantity(quantity)
+                .set_type_vehicle(type_vehicle) 
                 .build()
             )
             
@@ -249,3 +254,17 @@ class RentDeleteView(generics.DestroyAPIView):
             return Response({"error": "Aluguel não encontrado."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": f"Erro ao excluir aluguel: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        
+class VehicleDeleteView(generics.DestroyAPIView):
+    queryset = Vehicle.objects.all()
+    serializer_class = VehicleSerializer
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            vehicle = self.get_object()  
+            vehicle.delete()  
+            return Response({"message": "Veiculo excluído com sucesso!"}, status=status.HTTP_204_NO_CONTENT)
+        except Vehicle.DoesNotExist:
+            return Response({"error": "Veiculo não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"Erro ao excluir Veiculo: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)

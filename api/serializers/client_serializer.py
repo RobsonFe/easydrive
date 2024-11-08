@@ -3,7 +3,7 @@ from rest_framework import serializers
 from api import model
 from api.model.client_model import Client
 from api.model.rent_model import Rental
-from api.model.vehicle_model import Vehicle
+from api.model.vehicle_model import TypeVehicle, Vehicle
 from api.serializers.user_serializer import UserSerializer
 
 
@@ -27,9 +27,10 @@ class RentSerializer(serializers.ModelSerializer):
 
 
 class VehicleSerializer(serializers.ModelSerializer):
+    type_vehicle = serializers.ChoiceField(choices=TypeVehicle.choices, default=TypeVehicle.CAR)
     class Meta:
         model = Vehicle
-        fields = ['id', 'brand', 'model', 'year', 'is_available']  
+        fields = ['id', 'brand', 'model', 'year', 'quantity','type_vehicle', 'is_available']  
         extra_kwargs = {'is_available': {'read_only': True}}
 
 class RentListSerializer(serializers.ModelSerializer):

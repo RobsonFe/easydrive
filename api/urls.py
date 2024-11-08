@@ -1,5 +1,5 @@
 from django.urls import path
-from api.views.views import ClientCreateView, ClientDetailView, ClientListView, ClientWithUserView, RentCreateView, RentDeleteView, RentListView, UserCreateView, UserListView, UserUpdateView, VehicleCreateView
+from api.views.views import ClientCreateView, ClientDetailView, ClientListView, ClientWithUserView, RentCreateView, RentDeleteView, RentListView, UserCreateView, UserListView, UserUpdateView, VehicleCreateView, VehicleDeleteView
 
 urlpatterns = [
     path('user/create/', UserCreateView.as_view(), name='Criar Usuário'),
@@ -12,5 +12,6 @@ urlpatterns = [
     path('client/user/list/', ClientWithUserView.as_view(), name='Lista de Clientes associadas ao usuário'),
     path('rent/list/',  RentListView.as_view(), name='Lista de Alugueis'),
     path('user/update/<int:pk>',  UserUpdateView.as_view(), name='Atualizar Usuário'),
-    path('delete/rent/<uuid:pk>', RentDeleteView.as_view(), name='Exclui um aluguel')
+    path('delete/rent/<uuid:pk>', RentDeleteView.as_view(), name='Exclui um aluguel'),
+    path('delete/vehicle/<uuid:pk>', VehicleDeleteView.as_view(), name='Exclui um veiculo')
 ]
