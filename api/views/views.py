@@ -126,6 +126,8 @@ class UserListView(generics.ListAPIView):
     serializer_class = UserListSerializer
     
     def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+        logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
         return super().get(request, *args, **kwargs)
     
 
@@ -136,7 +138,8 @@ class ClientWithUserView(generics.ListAPIView):
     def get(self, request, *args, **kwargs):
         clients = self.get_queryset()  
         serializer = self.get_serializer(clients, many=True) # serializa a lista de clientes
-
+        logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
+        
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ClientDetailView(generics.RetrieveAPIView):
@@ -173,18 +176,28 @@ class RentCreateView(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         client_id = request.data.get("client")
         vehicle_id = request.data.get("vehicle")
-        start_date_str = request.data.get("start_date")
-        end_date_str = request.data.get("end_date")
+        start_date = request.data.get("start_date")
+        end_date = request.data.get("end_date")
 
         try:
             client = Client.objects.get(id=client_id)
             vehicle = Vehicle.objects.get(id=vehicle_id)
 
-            start_date = parse_date(start_date_str)
-            end_date = parse_date(end_date_str)
+            start_date = parse_date(start_date)
+            end_date = parse_date(end_date)
 
             if not start_date or not end_date:
                 return Response({"error": "Formato de data inválido."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            vehicle.quantity -= 1 
+            
+            if vehicle.quantity < 0:
+                return Response({"error": "Veículo não disponível."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if vehicle.quantity == 0:
+                vehicle.is_available = False
+            
+            vehicle.save()
 
             builder = RentBuilder()
             rental = (builder
@@ -197,7 +210,7 @@ class RentCreateView(generics.CreateAPIView):
             rental.save() 
 
             serializer = self.get_serializer(rental)
-            logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
+            # logger.info(json.dumps(serializer.data, indent=4, ensure_ascii=False))
             
             return Response({"message": "Aluguel criado com sucesso!", "result": serializer.data},
                             status=status.HTTP_201_CREATED)
@@ -216,6 +229,8 @@ class RentListView(generics.ListAPIView):
     serializer_class = RentListSerializer
     
     def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+        logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
         return super().get(request, *args, **kwargs)
     
 
@@ -224,27 +239,39 @@ class VehicleListView(generics.ListAPIView):
     serializer_class = VehicleSerializer
     
     def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+        logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
         return super().get(request, *args, **kwargs)
+    
     
 class VehicleListIsNotAvailableView(generics.ListAPIView):
     queryset = Vehicle.objects.all().order_by('brand').filter(is_available=False)
     serializer_class = VehicleSerializer
     
     def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+        logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
         return super().get(request, *args, **kwargs)
+    
     
 class VehicleListByCarView(generics.ListAPIView):
     queryset = Vehicle.objects.all().order_by('brand').filter(type_vehicle=TypeVehicle.CAR)
     serializer_class = VehicleSerializer
     
     def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+        logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
         return super().get(request, *args, **kwargs)
+    
 class VehicleListByMotoView(generics.ListAPIView):
     queryset = Vehicle.objects.all().order_by('brand').filter(type_vehicle=TypeVehicle.MOTORCYCLE)
     serializer_class = VehicleSerializer
     
     def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+        logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
         return super().get(request, *args, **kwargs)
+    
 class VehicleCreateView(generics.CreateAPIView):
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
@@ -259,10 +286,9 @@ class VehicleCreateView(generics.CreateAPIView):
             description = request.data.get("description")
             
             if Vehicle.objects.filter(model=model).exists():
-                return Response(
-                    {'error': 'O modelo do veículo já está registrado.'}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                existing_vehicles = Vehicle.objects.exclude(brand=brand)
+                serializer = self.get_serializer(existing_vehicles, many=True)
+                return Response({"message": "Modelo já registrado, registrando dados restantes.", "result": serializer.data}, status=status.HTTP_200_OK)
             
             builder = VehicleBuilder()
             
@@ -285,7 +311,6 @@ class VehicleCreateView(generics.CreateAPIView):
             return Response({"message": "Veículo criado com sucesso!", "result": serializer.data}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return  Response({"message": "Erro ao criar veículo!", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-            
 
 class RentDeleteView(generics.DestroyAPIView):
     queryset = Rental.objects.all()

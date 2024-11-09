@@ -15,5 +15,5 @@ __All__ = [
     "VehicleDeleteView",
     "VehicleListView",
     "VehicleListByCarView",
-    "VehicleListByMotoView"
+    "VehicleListByMotoView",
 ]
