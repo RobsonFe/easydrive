@@ -53,7 +53,8 @@ class RentListSerializer(serializers.ModelSerializer):
 class RentServiceUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rental
-        fields = ['id', 'start_date', 'end_date',
-                  'returned', 'client', 'vehicle']
-        extra_kwargs = {'client': {'read_only': True},
-                        'vehicle': {'read_only': True}}
+        fields = ['id', 'end_date', 'returned', 'client', 'vehicle']
+        extra_kwargs = {
+            'client': {'read_only': True},
+            'vehicle': {'read_only': True},
+        }

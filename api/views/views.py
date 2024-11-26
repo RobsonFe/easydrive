@@ -1,4 +1,6 @@
+from time import timezone
 from tracemalloc import start
+from django.forms import ValidationError
 from django.http import JsonResponse
 from rest_framework import generics
 from rest_framework.response import Response
@@ -17,6 +19,8 @@ from api.serializers.user_serializer import UserSerializer, UserListSerializer
 from django.utils.dateparse import parse_date
 import logging
 import json
+from django.db import transaction
+from django.utils import timezone
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -181,21 +185,28 @@ class RentCreateView(generics.CreateAPIView):
     queryset = Rental.objects.all()
     serializer_class = RentSerializer
 
-    def post(self, request, *args, **kwargs):
+    @transaction.atomic
+    def post(self, request):
+
         client_id = request.data.get("client")
         vehicle_id = request.data.get("vehicle")
         start_date = request.data.get("start_date")
-        end_date = request.data.get("end_date")
 
         try:
             client = Client.objects.get(id=client_id)
             vehicle = Vehicle.objects.get(id=vehicle_id)
 
-            start_date = parse_date(start_date)
-            end_date = parse_date(end_date)
+            if not start_date:
+                return Response({"error": "Data de inicio é obrigatório."}, status=status.HTTP_400_BAD_REQUEST)
 
-            if not start_date or not end_date:
-                return Response({"error": "Formato de data inválido."}, status=status.HTTP_400_BAD_REQUEST)
+            start_date = parse_date(start_date)
+
+            if not start_date:
+                return Response({"error": "Data de inicio inválida. Use o formato YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if start_date < timezone.now().date():
+                raise ValidationError(
+                    'A data de início do aluguel não pode ser no passado.')
 
             vehicle.quantity -= 1
 
@@ -212,7 +223,6 @@ class RentCreateView(generics.CreateAPIView):
                       .set_client(client)
                       .set_vehicle(vehicle)
                       .set_start_date(start_date)
-                      .set_end_date(end_date)
                       .build())
 
             rental.save()
@@ -236,48 +246,51 @@ class RentServiceUpdateView(generics.UpdateAPIView):
     queryset = Rental.objects.all()
     serializer_class = RentServiceUpdateSerializer
 
+    @transaction.atomic
     def update(self, request, *args, **kwargs):
 
-        client_id = request.data.get("client")
-        vehicle_id = request.data.get("vehicle")
+        end_date = request.data.get("end_date")
 
         try:
             rental = self.get_object()
-            client = Client.objects.get(id=client_id)
-            vehicle = Vehicle.objects.get(id=vehicle_id)
+            vehicle = rental.vehicle
 
-            returned = request.data.get('returned')
-            type_vehicle = request.data.get("type_vehicle", TypeVehicle.CAR)
-            start_date = request.data.get('start_date')
-            end_date = request.data.get('end_date')
+            if not rental.returned:
 
-            if not start_date or not end_date:
-                return Response({"error": "É necessário ter uma data inicial e data final de aluguel."}, status=status.HTTP_400_BAD_REQUEST)
+                end_date = parse_date(end_date)
 
-            vehicle.quantity += 1
+                if not end_date:
+                    return Response({"error": "Necessário ter a data de devolução."}, status=status.HTTP_400_BAD_REQUEST)
 
-            if vehicle.quantity > 0:
+                rental.end_date = end_date
+                rental.returned = True
+                vehicle.quantity += 1
                 vehicle.is_available = True
 
-            rental.returned = returned or rental.returned
-            type_vehicle = type_vehicle or vehicle.type_vehicle
-            rental.start_date = start_date or rental.start_date
-            rental.end_date = end_date or rental.end_date
-            rental.save()
-            vehicle.save()
+                vehicle.save()
+                rental.save()
 
-            serializer = self.get_serializer(rental)
+                serializer = self.get_serializer(rental)
 
-            logger.info(json.dumps(serializer.data,
-                        indent=4, ensure_ascii=False))
+                return Response({
+                    "message": "Baixar no aluguel realizado com sucesso!",
+                    "result": serializer.data
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    "message": "Este aluguel já foi devolvido!",
+                }, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({"message": "Aluguel atualizado com sucesso!", "result": serializer.data}, status=status.HTTP_200_OK)
-        except Client.DoesNotExist:
-            return Response({"message": "Cliente não encontrado!"}, status=status.HTTP_404_NOT_FOUND)
-        except Vehicle.DoesNotExist:
-            return Response({"message": "Veículo não encontrado!"}, status=status.HTTP_404_NOT_FOUND)
+        except Rental.DoesNotExist:
+            return Response(
+                {"message": "Aluguel não encontrado!"},
+                status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as e:
-            return Response({"message": "Erro ao atualizar aluguel!", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                "message": "Erro ao finalizar aluguel!",
+                "error": str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RentListView(generics.ListAPIView):
