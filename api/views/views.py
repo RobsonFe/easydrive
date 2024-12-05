@@ -1,5 +1,6 @@
 from time import timezone
 from tracemalloc import start
+from typing import Optional
 from django.forms import ValidationError
 from django.http import JsonResponse
 from rest_framework import generics
@@ -10,6 +11,7 @@ from api.build.client_builder import ClientBuilder
 from api.build.rent_builder import RentBuilder
 from api.build.user_builder import UserBuilder
 from api.build.vehicle_builder import VehicleBuilder
+from api.exepctions.constants.validation_request import ValidationRequest
 from api.model.client_model import Client
 from api.model.rent_model import Rental
 from api.model.user_model import User
@@ -27,6 +29,11 @@ logger = logging.getLogger(__name__)
 
 
 class UserCreateView(generics.CreateAPIView):
+
+    def __init__(self, validate: Optional[ValidationRequest] = None, **kwargs: logging) -> None:
+        super().__init__(**kwargs)
+        self.validate = validate if validate is not None else ValidationRequest()
+
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
@@ -38,11 +45,7 @@ class UserCreateView(generics.CreateAPIView):
             email = request.data.get('email')
             password = request.data.get('password')
 
-            if UserSerializer.objects.filter(email=email).exists():
-                return Response({'error': 'O E-mail informado está em uso'}, status=status.HTTP_400_BAD_REQUEST)
-
-            if UserSerializer.objects.filter(username=username).exists():
-                return Response({'error': 'O username informado está em uso'}, status=status.HTTP_400_BAD_REQUEST)
+            self.validate.validation_create(email, username)
 
             builder = UserBuilder()
             user = (builder
@@ -182,6 +185,11 @@ class ClientListView(generics.ListAPIView):
 
 
 class RentCreateView(generics.CreateAPIView):
+
+    def __init__(self, validate: Optional[ValidationRequest] = None, **kwargs: logging) -> None:
+        super().__init__(**kwargs)
+        self.validate = validate if validate is not None else ValidationRequest()
+
     queryset = Rental.objects.all()
     serializer_class = RentSerializer
 
@@ -196,17 +204,7 @@ class RentCreateView(generics.CreateAPIView):
             client = Client.objects.get(id=client_id)
             vehicle = Vehicle.objects.get(id=vehicle_id)
 
-            if not start_date:
-                return Response({"error": "Data de inicio é obrigatório."}, status=status.HTTP_400_BAD_REQUEST)
-
-            start_date = parse_date(start_date)
-
-            if not start_date:
-                return Response({"error": "Data de inicio inválida. Use o formato YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
-
-            if start_date < timezone.now().date():
-                raise ValidationError(
-                    'A data de início do aluguel não pode ser no passado.')
+            self.validate.validation_rent_create(start_date)
 
             vehicle.quantity -= 1
 

@@ -44,9 +44,9 @@ pip install -r requirements.txt
 
 ```json
 {
-  "title": "Estudar Python",
-  "status": "Em andamento",
-  "priority": "Alta"
+  "client": "0d4c67db-954d-466b-b4ea-2d9b137c4c3f",
+  "vehicle": "0e59edda-1ef4-49cd-b05f-85603fbafa1e",
+  "start_date": "2024-11-26"
 }
 ```
 
@@ -54,21 +54,21 @@ pip install -r requirements.txt
 
 ## Visão Geral
 
-Esta API REST gerencia tarefas com os seguintes campos: `title`, `status`, `priority`, e `notion_page_id`. Abaixo estão descritos os principais endpoints da API.
+Esta API REST gerencia aluguéis de veiculos com os seguintes campos: `client`, `vehicle`, e `start_date`. Abaixo estão descritos os principais endpoints da API.
 
 ## Endpoints
 
-### 1. **Criar Tarefa**
+### 1. **Alugar um Carro**
 
-- **URL:** `/api/v1/notion/create/`
+- **URL:** `/api/v1/rent/create/`
 - **Método:** `POST`
-- **Descrição:** Cria uma nova tarefa.
+- **Descrição:** Aluga um Veiculo.
 - **Corpo da Requisição:**
   ```json
   {
-    "title": "Estudar Django",
-    "status": "Em andamento",
-    "priority": "Alta"
+    "client": "0d4c67db-954d-466b-b4ea-2d9b137c4c3f",
+    "vehicle": "0e59edda-1ef4-49cd-b05f-85603fbafa1e",
+    "start_date": "2024-11-26"
   }
   ```
 - **Resposta de Sucesso:**
@@ -76,12 +76,15 @@ Esta API REST gerencia tarefas com os seguintes campos: `title`, `status`, `prio
   - **Exemplo de Corpo da Resposta:**
     ```json
     {
-      "_id": "unique_task_id",
-      "title": "Aprendendo Python",
-      "status": "Em andamento",
-      "priority": "Alta",
-      "notion_page_id": "generated_notion_page_id",
-      "__v": 0
+      "message": "Aluguel criado com sucesso!",
+      "result": {
+        "id": "5adb384a-5e82-44cc-8fd7-11e73ef2074e",
+        "start_date": "26-11-2024",
+        "end_date": null,
+        "returned": false,
+        "client": "0d4c67db-954d-466b-b4ea-2d9b137c4c3f",
+        "vehicle": "0e59edda-1ef4-49cd-b05f-85603fbafa1e"
+      }
     }
     ```
 - **Respostas de Erro Comuns:**
@@ -89,9 +92,9 @@ Esta API REST gerencia tarefas com os seguintes campos: `title`, `status`, `prio
 
 ### 2. **Listar Tarefas**
 
-- **URL:** `/api/v1/notion/list`
+- **URL:** `/api/v1/rent/list/`
 - **Método:** `GET`
-- **Descrição:** Retorna uma lista de todas as tarefas.
+- **Descrição:** Retorna uma lista de todos os aluguéis.
 - **Parâmetros de Consulta (Opcional):**
   - `page`: Número da página para paginação (padrão: 1).
   - `limit`: Número de resultados por página (padrão: 10).
@@ -100,27 +103,59 @@ Esta API REST gerencia tarefas com os seguintes campos: `title`, `status`, `prio
   - **Exemplo de Corpo da Resposta:**
     ```json
     {
-      "count": 3,
+      "count": 2,
       "next": null,
       "previous": null,
       "results": [
         {
-          "id": "2044b453-8ef4-45dc-860e-d2abd0b13672",
-          "title": "Aprendendo Python",
-          "status": "Concluído",
-          "priority": "Alta"
+          "id": "15ebca20-a279-42cf-9528-94286e38b125",
+          "start_date": "01-11-2024",
+          "end_date": "02-11-2024",
+          "client_data": {
+            "id": "5191d544-20b2-47bf-885a-9f8772daf3b8",
+            "total_rentals": 0,
+            "user_data": {
+              "id": 2,
+              "username": "RobsonFe",
+              "name": "Robson Ferreira da Silva",
+              "email": "robson12ferreira@gmail.com"
+            }
+          },
+          "vehicle_data": {
+            "id": "be5fa173-7ee2-4137-b3ca-1a18d6726c1f",
+            "brand": "Toyota",
+            "model": "Corolla",
+            "year": 2023,
+            "quantity": 0,
+            "type_vehicle": "Carro",
+            "description": "",
+            "is_available": true
+          }
         },
         {
-          "id": "3e150ad4-77ac-405c-a3cc-f0c843ccf288",
-          "title": "Aprendendo Django Rest Framework",
-          "status": "Em andamento",
-          "priority": "Alta"
-        },
-        {
-          "id": "c6c86d4a-50a6-48dc-8e8f-b15a9e72f16e",
-          "title": "Estudando Django",
-          "status": "Não iniciada",
-          "priority": "Atenção"
+          "id": "1a5edbc0-7f25-496f-8f8d-57d8a1d0f64d",
+          "start_date": "03-11-2024",
+          "end_date": "04-11-2024",
+          "client_data": {
+            "id": "0d4c67db-954d-466b-b4ea-2d9b137c4c3f",
+            "total_rentals": 0,
+            "user_data": {
+              "id": 3,
+              "username": "JohnWick",
+              "name": "John Wick",
+              "email": "john@gmail.com"
+            }
+          },
+          "vehicle_data": {
+            "id": "be5fa173-7ee2-4137-b3ca-1a18d6726c1f",
+            "brand": "Toyota",
+            "model": "Corolla",
+            "year": 2023,
+            "quantity": 0,
+            "type_vehicle": "Carro",
+            "description": "",
+            "is_available": true
+          }
         }
       ]
     }
