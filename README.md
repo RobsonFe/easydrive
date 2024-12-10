@@ -2,45 +2,51 @@
 
 ## Descrição do Projeto
 
-Esse projeto consiste em uma API feita em Django Rest Framework integrada com o banco de dados PostgreSQL, para gerenciar alugueis de carros, com documentação no Swagger e OpenAPI.
+O **EasyDrive** é uma aplicação de API desenvolvida em **Django Rest Framework** e integrada com o banco de dados **PostgreSQL**. O sistema tem como objetivo gerenciar o aluguel de carros, permitindo o CRUD de veículos, clientes e aluguéis, além de fornecer a documentação interativa via **Swagger** e **OpenAPI**.
+
+A aplicação oferece recursos para o **administrador** gerenciar os aluguéis e os **clientes** visualizarem seus aluguéis passados e futuros.
 
 ## Tecnologias Utilizadas no Projeto
 
-- Django Rest Framework para o desenvolvimento de aplicações em Python.
-- Banco de dados PostgreSQL.
-- Swagger e OpenAPI para documentação da API.
+- **Django Rest Framework** para o desenvolvimento da API.
+- **Banco de dados PostgreSQL** para persistência de dados.
+- **Swagger e OpenAPI** para a documentação da API.
+- **Next.js** para o front-end da aplicação.
+- **Flowbite** e **TailwindCSS** para a criação de interfaces interativas e responsivas no front-end.
 
 ## Front-End
 
-Para o front-end, em NextJS, com o Flowbite e Tailwind para a criação de interfaces interativas
-<br>
+O front-end foi desenvolvido com **Next.js**, utilizando **Flowbite** e **TailwindCSS** para construção de interfaces de usuário dinâmicas e responsivas.
+
 [Projeto Front-end](https://github.com/RobsonFe/)
 
-## **Instalação**
+## Instalação
 
-Para instalar todas as ferramentas necessárias, basta utilizar o `requirements.txt`.
+Para instalar as dependências do projeto, basta rodar o seguinte comando para instalar todos os pacotes necessários:
 
-```python
+```bash
 pip install -r requirements.txt
 ```
 
+Além disso, é necessário configurar o banco de dados PostgreSQL. Abaixo estão os passos para a configuração do ambiente:
+
+1. Crie um banco de dados PostgreSQL.
+2. Altere as configurações de conexão no arquivo `settings.py` do Django para refletir seu banco de dados local.
+3. Rode as migrações com o comando:
+   ```bash
+   python manage.py migrate
+   ```
+
 ## Endpoints da API
 
-### **Link da Documentação da API**
+### Link da Documentação da API
 
-<br>
-
-- [Documentação da API](http://127.0.0.1:8000/docs/)
-
-<br>
-
-- [Documentação da API ALternativa](http://127.0.0.1:8000/redoc/)
-
-<br>
+- [Documentação da API Swagger](http://127.0.0.1:8000/docs/)
+- [Documentação da API (Alternativa)](http://127.0.0.1:8000/redoc/)
 
 ---
 
-- Schema
+### Exemplo de Payload para Aluguel de Carro
 
 ```json
 {
@@ -50,19 +56,13 @@ pip install -r requirements.txt
 }
 ```
 
-# Documentação da API
-
-## Visão Geral
-
-Esta API REST gerencia aluguéis de veiculos com os seguintes campos: `client`, `vehicle`, e `start_date`. Abaixo estão descritos os principais endpoints da API.
-
-## Endpoints
+## Endpoints da API
 
 ### 1. **Alugar um Carro**
 
 - **URL:** `/api/v1/rent/create/`
 - **Método:** `POST`
-- **Descrição:** Aluga um Veiculo.
+- **Descrição:** Cria um novo aluguel de carro.
 - **Corpo da Requisição:**
   ```json
   {
@@ -90,11 +90,11 @@ Esta API REST gerencia aluguéis de veiculos com os seguintes campos: `client`, 
 - **Respostas de Erro Comuns:**
   - **Código:** `400 Bad Request` – Se houver erro de validação nos dados.
 
-### 2. **Listar Tarefas**
+### 2. **Listar Todos os Aluguéis**
 
 - **URL:** `/api/v1/rent/list/`
 - **Método:** `GET`
-- **Descrição:** Retorna uma lista de todos os aluguéis.
+- **Descrição:** Retorna uma lista paginada de todos os aluguéis.
 - **Parâmetros de Consulta (Opcional):**
   - `page`: Número da página para paginação (padrão: 1).
   - `limit`: Número de resultados por página (padrão: 10).
@@ -113,7 +113,6 @@ Esta API REST gerencia aluguéis de veiculos com os seguintes campos: `client`, 
           "end_date": "02-11-2024",
           "client_data": {
             "id": "5191d544-20b2-47bf-885a-9f8772daf3b8",
-            "total_rentals": 0,
             "user_data": {
               "id": 2,
               "username": "RobsonFe",
@@ -126,34 +125,6 @@ Esta API REST gerencia aluguéis de veiculos com os seguintes campos: `client`, 
             "brand": "Toyota",
             "model": "Corolla",
             "year": 2023,
-            "quantity": 0,
-            "type_vehicle": "Carro",
-            "description": "",
-            "is_available": true
-          }
-        },
-        {
-          "id": "1a5edbc0-7f25-496f-8f8d-57d8a1d0f64d",
-          "start_date": "03-11-2024",
-          "end_date": "04-11-2024",
-          "client_data": {
-            "id": "0d4c67db-954d-466b-b4ea-2d9b137c4c3f",
-            "total_rentals": 0,
-            "user_data": {
-              "id": 3,
-              "username": "JohnWick",
-              "name": "John Wick",
-              "email": "john@gmail.com"
-            }
-          },
-          "vehicle_data": {
-            "id": "be5fa173-7ee2-4137-b3ca-1a18d6726c1f",
-            "brand": "Toyota",
-            "model": "Corolla",
-            "year": 2023,
-            "quantity": 0,
-            "type_vehicle": "Carro",
-            "description": "",
             "is_available": true
           }
         }
@@ -161,41 +132,41 @@ Esta API REST gerencia aluguéis de veiculos com os seguintes campos: `client`, 
     }
     ```
 
-### 3. **Obter Detalhes de uma Tarefa**
+### 3. **Obter Detalhes de um Aluguel**
 
-- **URL:** `/api/v1/notion/findby/{id}`
+- **URL:** `/api/v1/rent/detail/{id}/`
 - **Método:** `GET`
-- **Descrição:** Retorna os detalhes de uma tarefa específica.
+- **Descrição:** Retorna os detalhes de um aluguel específico pelo ID.
 - **Parâmetros de Caminho:**
-  - `id`: O ID da tarefa a ser retornada.
+  - `id`: ID do aluguel.
 - **Resposta de Sucesso:**
   - **Código:** `200 OK`
   - **Exemplo de Corpo da Resposta:**
     ```json
     {
-      "id": "3e150ad4-77ac-405c-a3cc-f0c843ccf288",
-      "title": "Aprendendo Django Rest Framework",
-      "status": "Em andamento",
-      "priority": "Alta"
+      "id": "5adb384a-5e82-44cc-8fd7-11e73ef2074e",
+      "start_date": "26-11-2024",
+      "end_date": null,
+      "returned": false,
+      "client": "0d4c67db-954d-466b-b4ea-2d9b137c4c3f",
+      "vehicle": "0e59edda-1ef4-49cd-b05f-85603fbafa1e"
     }
     ```
 - **Respostas de Erro Comuns:**
-  - **Código:** `404 Not Found` – Se a tarefa com o ID fornecido não for encontrada.
+  - **Código:** `404 Not Found` – Se o aluguel com o ID fornecido não for encontrado.
 
-### 4. **Atualizar Tarefa**
+### 4. **Atualizar um Aluguel**
 
-- **URL:** `/api/v1/notion/atualizar/{id}`
+- **URL:** `/api/v1/rent/update/{id}/`
 - **Método:** `PUT`
-- **Descrição:** Atualiza uma tarefa existente.
+- **Descrição:** Atualiza os dados de um aluguel.
 - **Parâmetros de Caminho:**
-  - `id`: O ID da tarefa a ser atualizada.
+  - `id`: ID do aluguel a ser atualizado.
 - **Corpo da Requisição:**
   ```json
   {
-    "id": "3e150ad4-77ac-405c-a3cc-f0c843ccf288",
-    "title": "Aprendendo Django Rest Framework",
-    "status": "Em andamento",
-    "priority": "Alta"
+    "end_date": "30-11-2024",
+    "returned": true
   }
   ```
 - **Resposta de Sucesso:**
@@ -203,31 +174,30 @@ Esta API REST gerencia aluguéis de veiculos com os seguintes campos: `client`, 
   - **Exemplo de Corpo da Resposta:**
     ```json
     {
-      "id": "3e150ad4-77ac-405c-a3cc-f0c843ccf288",
-      "title": "Aprendendo Django Rest Framework",
-      "status": "Concluído",
-      "priority": "Alta",
-      "notion_page_id": "d9053095-4fe1-4e53-90b6-1bdb126fc838",
-      "updatedAt": "2024-08-20T14:00:00Z",
-      "__v": 0
+      "message": "Aluguel atualizado com sucesso!",
+      "result": {
+        "id": "5adb384a-5e82-44cc-8fd7-11e73ef2074e",
+        "start_date": "26-11-2024",
+        "end_date": "30-11-2024",
+        "returned": true,
+        "client": "0d4c67db-954d-466b-b4ea-2d9b137c4c3f",
+        "vehicle": "0e59edda-1ef4-49cd-b05f-85603fbafa1e"
+      }
     }
     ```
 - **Respostas de Erro Comuns:**
   - **Código:** `400 Bad Request` – Se houver erro de validação nos dados.
-  - **Código:** `404 Not Found` – Se a tarefa com o ID fornecido não for encontrada.
 
-### 5. **Deletar Tarefa**
+### 5. **Deletar um Aluguel**
 
-- **URL:** `/api/v1/notion/delete/{id}`
+- **URL:** `/api/v1/rent/delete/{id}/`
 - **Método:** `DELETE`
-- **Descrição:** Remove uma tarefa específica.
-- **Parâmetros de Caminho:**
-  - `id`: O ID da tarefa a ser removida.
+- **Descrição:** Deleta um aluguel pelo ID.
 - **Resposta de Sucesso:**
   - **Código:** `204 No Content`
 - **Respostas de Erro Comuns:**
-  - **Código:** `404 Not Found` – Se a tarefa com o ID fornecido não for encontrada.
+  - **Código:** `404 Not Found` – Se o aluguel com o ID fornecido não for encontrado.
 
 ## License
 
-Licença [MIT licensed](LICENSE).
+Este projeto é licenciado sob a Licença MIT. Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
