@@ -1,12 +1,7 @@
-from time import timezone
-from tracemalloc import start
 from typing import Optional
-from django.forms import ValidationError
-from django.http import JsonResponse
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
-from api import serializers
 from api.build.client_builder import ClientBuilder
 from api.build.rent_builder import RentBuilder
 from api.build.user_builder import UserBuilder
@@ -22,7 +17,6 @@ from django.utils.dateparse import parse_date
 import logging
 import json
 from django.db import transaction
-from django.utils import timezone
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -201,25 +195,25 @@ class RentCreateView(generics.CreateAPIView):
         start_date = request.data.get("start_date")
 
         try:
-            client = Client.objects.get(id=client_id)
-            vehicle = Vehicle.objects.get(id=vehicle_id)
+            _client = Client.objects.get(id=client_id)
+            _vehicle = Vehicle.objects.get(id=vehicle_id)
 
             self.validate.validation_rent_create(start_date)
 
-            vehicle.quantity -= 1
+            _vehicle.quantity -= 1
 
-            if vehicle.quantity < 0:
+            if _vehicle.quantity < 0:
                 return Response({"error": "Veículo não disponível."}, status=status.HTTP_400_BAD_REQUEST)
 
-            if vehicle.quantity == 0:
-                vehicle.is_available = False
+            if _vehicle.quantity == 0:
+                _vehicle.is_available = False
 
-            vehicle.save()
+            _vehicle.save()
 
             builder = RentBuilder()
             rental = (builder
-                      .set_client(client)
-                      .set_vehicle(vehicle)
+                      .set_client(_client)
+                      .set_vehicle(_vehicle)
                       .set_start_date(start_date)
                       .build())
 

@@ -137,15 +137,15 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS: True
+CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
-    #Configuração da paginação da API.
+    # Configuração da paginação da API.
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
     # Aceita data e hora no formato brasileiro
     'DATE_FORMAT': "%d-%m-%Y",
     'DATETIME_FORMAT': "%d-%m-%Y %H:%M",
-    'DATE_INPUT_FORMATS': ["%d-%m-%Y"], 
+    'DATE_INPUT_FORMATS': ["%d-%m-%Y"],
     'DATETIME_INPUT_FORMATS': ["%d-%m-%Y %H:%M"],
 }
