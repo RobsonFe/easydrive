@@ -51,8 +51,7 @@ class UserCreateView(generics.CreateAPIView):
 
             serializer = self.get_serializer(user)
 
-            logger.info(json.dumps(serializer.data,
-                        indent=4, ensure_ascii=False))
+            logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
 
             return Response({"message": "Usuário criado com sucesso!", "result": serializer.data}, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -87,8 +86,7 @@ class UserUpdateView(generics.UpdateAPIView):
 
             serializer = self.get_serializer(user)
 
-            logger.info(json.dumps(serializer.data,
-                        indent=4, ensure_ascii=False))
+            logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
 
             return Response({"message": "Usuário atualizado com sucesso!", "result": serializer.data}, status=status.HTTP_200_OK)
         except Exception as e:
@@ -157,8 +155,7 @@ class ClientDetailView(generics.RetrieveAPIView):
         try:
             client = self.get_queryset().get(id=client_id)
             serializer = self.get_serializer(client)
-            logger.info(json.dumps(serializer.data,
-                        indent=4, ensure_ascii=False))
+            logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Client.DoesNotExist:
@@ -316,8 +313,7 @@ class VehicleListIsNotAvailableView(generics.ListAPIView):
 
 
 class VehicleListByCarView(generics.ListAPIView):
-    queryset = Vehicle.objects.all().order_by(
-        'brand').filter(type_vehicle=TypeVehicle.CAR)
+    queryset = Vehicle.objects.all().order_by('brand').filter(type_vehicle=TypeVehicle.CAR)
     serializer_class = VehicleSerializer
 
     def get(self, request, *args, **kwargs):
@@ -327,8 +323,7 @@ class VehicleListByCarView(generics.ListAPIView):
 
 
 class VehicleListByMotoView(generics.ListAPIView):
-    queryset = Vehicle.objects.all().order_by(
-        'brand').filter(type_vehicle=TypeVehicle.MOTORCYCLE)
+    queryset = Vehicle.objects.all().order_by('brand').filter(type_vehicle=TypeVehicle.MOTORCYCLE)
     serializer_class = VehicleSerializer
 
     def get(self, request, *args, **kwargs):
@@ -353,7 +348,7 @@ class VehicleCreateView(generics.CreateAPIView):
             if Vehicle.objects.filter(model=model).exists():
                 existing_vehicles = Vehicle.objects.exclude(brand=brand)
                 serializer = self.get_serializer(existing_vehicles, many=True)
-                return Response({"message": "Modelo já registrado, registrando dados restantes.", "result": serializer.data}, status=status.HTTP_200_OK)
+                return Response({"message": "Modelo já registrado.", "result": serializer.data}, status=status.HTTP_200_OK)
 
             builder = VehicleBuilder()
 
