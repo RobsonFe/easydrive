@@ -338,15 +338,15 @@ class VehicleCreateView(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            brand = request.data.get("brand")
-            model = request.data.get("model")
+            brand = request.data.get("brand").strip().lower()
+            model = request.data.get("model").strip().lower()
             year = request.data.get("year")
             quantity = request.data.get("quantity")
             type_vehicle = request.data.get("type_vehicle", TypeVehicle.CAR)
             description = request.data.get("description")
 
-            if Vehicle.objects.filter(model=model).exists():
-                existing_vehicles = Vehicle.objects.exclude(brand=brand)
+            if Vehicle.objects.filter(brand__iexact=brand, model__iexact=model).exists():
+                existing_vehicles = Vehicle.objects.exclude(brand__iexact=brand, model__iexact=model)
                 serializer = self.get_serializer(existing_vehicles, many=True)
                 return Response({"message": "Modelo já registrado.", "result": serializer.data}, status=status.HTTP_200_OK)
 

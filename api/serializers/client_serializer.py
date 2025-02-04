@@ -40,6 +40,7 @@ class VehicleSerializer(serializers.ModelSerializer):
         extra_kwargs = {'is_available': {'read_only': True}}
 
 
+
 class RentListSerializer(serializers.ModelSerializer):
     client_data = ClientSerializer(source='client')
     vehicle_data = VehicleSerializer(source='vehicle')

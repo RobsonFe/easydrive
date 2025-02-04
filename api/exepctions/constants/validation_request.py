@@ -17,10 +17,10 @@ class ValidationRequest():
         if not email or not username:
             return Response({'error': 'Os campos email e username são obrigatórios'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if username > 3:
+        if len(username) > 3:
             return Response({'error': 'O campo username deve ter no mínimo 3 caracteres'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if username < 20:
+        if len(username) < 20:
             return Response({'error': 'O campo username deve ter no máximo 20 caracteres'}, status=status.HTTP_400_BAD_REQUEST)
 
     def validation_rent_create(self, start_date, ) -> None:
