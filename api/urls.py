@@ -1,6 +1,6 @@
 from django.urls import URLPattern, path
 from api.views.authentication_view import LoginView, LogoutView
-from api.views.views import ClientCreateView, ClientDetailView, ClientListView, ClientWithUserView, RentCreateView, RentDeleteView, RentListView, RentServiceUpdateView, UserCreateView, UserListView, UserUpdateView, VehicleCreateView, VehicleDeleteView, VehicleListByCarView, VehicleListByMotoView, VehicleListView
+from api.views.views import ClientCreateView, ClientDeleteView, ClientDetailView, ClientListView, ClientWithUserView, RentCreateView, RentDeleteView, RentListView, RentServiceUpdateView, UserCreateView, UserDeleteView, UserListView, UserUpdateView, VehicleCreateView, VehicleDeleteView, VehicleListByCarView, VehicleListByMotoView, VehicleListView
 
 url_auth:list[URLPattern]=[
      path('login/', LoginView.as_view(), name='Login no sistema'),
@@ -12,6 +12,7 @@ url_clients: list[URLPattern] = [
      path('clients/<uuid:pk>', ClientDetailView.as_view(), name='Detalhes do Cliente'),
      path('client/list/',  ClientListView.as_view(), name='Detalhes dos Clientes'),
      path('client/user/list/', ClientWithUserView.as_view(), name='Lista de Clientes associadas ao usuário'),
+     path('delete/client/<uuid:pk>', ClientDeleteView.as_view(), name='Exclui um cliente'),
 ]
 
 url_vehicles:list[URLPattern]=[
@@ -30,4 +31,5 @@ urlpatterns = [
     path('update/rent/<uuid:pk>', RentServiceUpdateView.as_view(), name='Atualiza um aluguel'),
     path('delete/rent/<uuid:pk>', RentDeleteView.as_view(), name='Exclui um aluguel'),
     path('delete/vehicle/<uuid:pk>', VehicleDeleteView.as_view(), name='Exclui um veiculo'),
+    path('delete/user/<int:pk>', UserDeleteView.as_view(), name='Exclui um usuário'),
 ] + url_auth + url_clients + url_vehicles

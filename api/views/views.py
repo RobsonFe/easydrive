@@ -471,3 +471,39 @@ class VehicleDeleteView(generics.DestroyAPIView):
             return Response({"error": "Veiculo não encontrado."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": f"Erro ao excluir Veiculo: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class ClientDeleteView(generics.DestroyAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
+    queryset = Client.objects.all()
+    serializer_class = ClientSerializer
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            client = self.get_object()
+            client.delete()
+            return Response({"message": "Cliente excluído com sucesso!"}, status=status.HTTP_204_NO_CONTENT)
+        except Client.DoesNotExist:
+            return Response({"error": "Cliente não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"Erro ao excluir cliente: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class UserDeleteView(generics.DestroyAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            user = self.get_object()
+            user.delete()
+            return Response({"message": "Usuário excluído com sucesso!"}, status=status.HTTP_204_NO_CONTENT)
+        except User.DoesNotExist:
+            return Response({"error": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"Erro ao excluir usuário: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
