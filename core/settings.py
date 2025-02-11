@@ -32,7 +32,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-# AUTH_USER_MODEL = 'api.User'
+AUTH_USER_MODEL = 'api.User'
 
 # Application definition
 
@@ -160,4 +160,9 @@ SIMPLE_JWT ={
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=2),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_USER_MODEL': 'api.User',  
+    'USER_ID_FIELD': 'id',  
+    'USER_ID_CLAIM': 'user_id',  
 }
