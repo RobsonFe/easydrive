@@ -38,8 +38,11 @@ class UserCreateView(generics.CreateAPIView):
             name = request.data.get('name')
             email = request.data.get('email')
             password = request.data.get('password')
+            cpf = request.data.get('cpf')
+            address = request.data.get('address')
+            phone = request.data.get('phone')
 
-            self.validate.validation_create(email, username)
+            self.validate.validation_create(email, username, cpf)
 
             builder = UserBuilder()
             user = (builder
@@ -47,6 +50,9 @@ class UserCreateView(generics.CreateAPIView):
                     .set_name(name)
                     .set_email(email)
                     .set_password(password)
+                    .set_cpf(cpf)
+                    .set_address(address)
+                    .set_phone(phone)
                     .build())
 
             serializer = self.get_serializer(user)
@@ -62,7 +68,7 @@ class UserUpdateView(generics.UpdateAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
-    def update(self, request, *args, **kwargs):
+    def patch(self, request, *args, **kwargs):
 
         try:
             # Recupera o usuário existente usando a chave primária (pk) do objeto que está sendo atualizado
@@ -71,16 +77,25 @@ class UserUpdateView(generics.UpdateAPIView):
             username = request.data.get('username')
             name = request.data.get('name')
             email = request.data.get('email')
+            cpf = request.data.get('cpf')
+            address = request.data.get('address')
+            phone = request.data.get('phone')
 
-            if UserSerializer.objects.filter(email=email).exists():
+            if User.objects.filter(email=email).exists():
                 return Response({'error': 'O E-mail informado está em uso'}, status=status.HTTP_400_BAD_REQUEST)
 
-            if UserSerializer.objects.filter(username=username).exists():
+            if User.objects.filter(username=username).exists():
                 return Response({'error': 'O username informado está em uso'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if User.objects.filter(cpf=cpf).exists():
+                return Response({'error': 'O CPF informado está em uso'}, status=status.HTTP_400_BAD_REQUEST)
 
             user.username = username or user.username
             user.name = name or user.name
             user.email = email or user.email
+            user.cpf = cpf or user.cpf
+            user.address = address or user.address
+            user.phone = phone or user.phone
 
             user.save()
 

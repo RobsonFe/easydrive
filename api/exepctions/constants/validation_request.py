@@ -12,10 +12,13 @@ logger = logging.getLogger(__name__)
 @staticmethod
 class ValidationRequest():
 
-    def validation_create(self, email: str, username: str) -> None:
+    def validation_create(self, email: str, username: str, cpf:str) -> None:
 
         if not email or not username:
             return Response({'error': 'Os campos email e username são obrigatórios'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not cpf:
+            return Response({'error': 'O campo cpf é obrigatório'}, status=status.HTTP_400_BAD_REQUEST)
 
         if len(username) > 3:
             return Response({'error': 'O campo username deve ter no mínimo 3 caracteres'}, status=status.HTTP_400_BAD_REQUEST)
