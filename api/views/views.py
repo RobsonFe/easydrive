@@ -1,5 +1,8 @@
 from typing import Optional
 from rest_framework import generics
+import rest_framework
+import rest_framework.authtoken
+import rest_framework.permissions
 from rest_framework.response import Response
 from rest_framework import status
 from api.build.client_builder import ClientBuilder
@@ -12,17 +15,20 @@ from api.model.rent_model import Rental
 from api.model.user_model import User
 from api.model.vehicle_model import TypeVehicle, Vehicle
 from api.serializers.client_serializer import ClientDetailsSerializer, ClientSerializer, RentListSerializer, RentSerializer, RentServiceUpdateSerializer, VehicleSerializer
-from api.serializers.user_serializer import UserSerializer, UserListSerializer
+from api.serializers.user_serializer import UserSerializer, UserListSerializer, UserUpdateSerializer
 from django.utils.dateparse import parse_date
 import logging
 import json
 from django.db import transaction
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 class UserCreateView(generics.CreateAPIView):
+    
+    permission_classes = [AllowAny]
 
     def __init__(self, validate: Optional[ValidationRequest] = None, **kwargs: logging) -> None:
         super().__init__(**kwargs)
@@ -65,7 +71,10 @@ class UserCreateView(generics.CreateAPIView):
 
 
 class UserUpdateView(generics.UpdateAPIView):
-    serializer_class = UserSerializer
+    
+    permission_classes = [IsAuthenticated]
+    
+    serializer_class = UserUpdateSerializer
     queryset = User.objects.all()
 
     def patch(self, request, *args, **kwargs):
@@ -109,10 +118,14 @@ class UserUpdateView(generics.UpdateAPIView):
 
 
 class ClientCreateView(generics.CreateAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
     serializer_class = ClientDetailsSerializer
     queryset = Client.objects.all()
 
     def post(self, request, *args, **kwargs):
+        
         user_id = request.data.get('user')
 
         try:
@@ -139,6 +152,9 @@ class ClientCreateView(generics.CreateAPIView):
 
 
 class UserListView(generics.ListAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
     queryset = User.objects.all()
     serializer_class = UserListSerializer
 
@@ -149,6 +165,9 @@ class UserListView(generics.ListAPIView):
 
 
 class ClientWithUserView(generics.ListAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
     serializer_class = ClientSerializer
     queryset = Client.objects.all()
 
@@ -162,6 +181,9 @@ class ClientWithUserView(generics.ListAPIView):
 
 
 class ClientDetailView(generics.RetrieveAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
 
@@ -178,6 +200,9 @@ class ClientDetailView(generics.RetrieveAPIView):
 
 
 class ClientListView(generics.ListAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
     queryset = Client.objects.all()
     serializer_class = ClientDetailsSerializer
 
@@ -191,6 +216,8 @@ class ClientListView(generics.ListAPIView):
 
 
 class RentCreateView(generics.CreateAPIView):
+    
+    permission_classes = [IsAuthenticated]
 
     def __init__(self, validate: Optional[ValidationRequest] = None, **kwargs: logging) -> None:
         super().__init__(**kwargs)
@@ -247,6 +274,9 @@ class RentCreateView(generics.CreateAPIView):
 
 
 class RentServiceUpdateView(generics.UpdateAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
     queryset = Rental.objects.all()
     serializer_class = RentServiceUpdateSerializer
 
@@ -298,6 +328,9 @@ class RentServiceUpdateView(generics.UpdateAPIView):
 
 
 class RentListView(generics.ListAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
     queryset = Rental.objects.all().order_by('start_date')
     serializer_class = RentListSerializer
 
@@ -308,6 +341,9 @@ class RentListView(generics.ListAPIView):
 
 
 class VehicleListView(generics.ListAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
     queryset = Vehicle.objects.all().order_by('brand')
     serializer_class = VehicleSerializer
 
@@ -318,6 +354,9 @@ class VehicleListView(generics.ListAPIView):
 
 
 class VehicleListIsNotAvailableView(generics.ListAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
     queryset = Vehicle.objects.all().order_by('brand').filter(is_available=False)
     serializer_class = VehicleSerializer
 
@@ -328,6 +367,9 @@ class VehicleListIsNotAvailableView(generics.ListAPIView):
 
 
 class VehicleListByCarView(generics.ListAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
     queryset = Vehicle.objects.all().order_by('brand').filter(type_vehicle=TypeVehicle.CAR)
     serializer_class = VehicleSerializer
 
@@ -338,6 +380,9 @@ class VehicleListByCarView(generics.ListAPIView):
 
 
 class VehicleListByMotoView(generics.ListAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
     queryset = Vehicle.objects.all().order_by('brand').filter(type_vehicle=TypeVehicle.MOTORCYCLE)
     serializer_class = VehicleSerializer
 
@@ -348,6 +393,9 @@ class VehicleListByMotoView(generics.ListAPIView):
 
 
 class VehicleCreateView(generics.CreateAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
 
@@ -390,6 +438,9 @@ class VehicleCreateView(generics.CreateAPIView):
 
 
 class RentDeleteView(generics.DestroyAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
     queryset = Rental.objects.all()
     serializer_class = RentSerializer
 
@@ -405,6 +456,9 @@ class RentDeleteView(generics.DestroyAPIView):
 
 
 class VehicleDeleteView(generics.DestroyAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
 
