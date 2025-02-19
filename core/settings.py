@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
+from pymongo import MongoClient
 import os
 
 load_dotenv()
@@ -60,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'api.middleware.middlewares.LogErroMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -97,6 +99,9 @@ DATABASES = {
     }
 }
 
+# Banco de dados MongoDB
+MONGO_CLIENT = MongoClient("mongodb://localhost:27017/")
+MONGO_DB = MONGO_CLIENT["logs_erros"] 
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

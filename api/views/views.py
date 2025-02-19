@@ -414,7 +414,7 @@ class VehicleCreateView(generics.CreateAPIView):
                 return Response({"message": "Modelo já registrado.", "result": serializer.data}, status=status.HTTP_200_OK)
 
             builder = VehicleBuilder()
-
+            
             vehicle = (
                 builder.set_brand(brand)
                 .set_model(model)
