@@ -12,8 +12,6 @@ class LogErroMiddleware(MiddlewareMixin):
         metodo = request.method
         erro = str(exception)
 
-        print(f"🔥 Erro capturado pelo process_exception: {erro}")
-
         # Salva no MongoDB
         logger.salvar_log(usuario, endpoint, metodo, erro)
 
@@ -28,8 +26,6 @@ class LogErroMiddleware(MiddlewareMixin):
             metodo = request.method
             # Converte response para string legível
             erro = f"Erro HTTP {response.status_code}: {response.content.decode('utf-8')}"
-
-            print(f"⚠️ Erro capturado pelo process_response: {erro}")
 
             # Salva no MongoDB
             logger.salvar_log(usuario, endpoint, metodo, erro)
