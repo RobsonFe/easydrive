@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import quote_plus
 from dotenv import load_dotenv
 from pymongo import MongoClient
 import os
@@ -100,8 +101,18 @@ DATABASES = {
 }
 
 # Banco de dados MongoDB
-MONGO_CLIENT = MongoClient("mongodb://localhost:27017/")
-MONGO_DB = MONGO_CLIENT["logs_erros"] 
+
+MONGO_USERNAME = quote_plus(os.getenv("MONGO_USERNAME"))
+MONGO_PASSWORD = quote_plus(os.getenv("MONGO_PASSWORD"))
+MONGO_HOST = os.getenv("MONGO_HOST")
+MONGO_DB_NAME = os.getenv("MONGO_DB_NAME")
+
+MONGO_URI = f"mongodb+srv://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_HOST}/{MONGO_DB_NAME}?retryWrites=true&w=majority"
+MONGO_CLIENT = MongoClient(MONGO_URI)
+MONGO_DB = MONGO_CLIENT[MONGO_DB_NAME]
+
+# MONGO_CLIENT = MongoClient("mongodb://localhost:27017/")
+# MONGO_DB = MONGO_CLIENT["logs_erros"] 
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

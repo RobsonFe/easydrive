@@ -407,7 +407,7 @@ class VehicleCreateView(generics.CreateAPIView):
             quantity = request.data.get("quantity")
             type_vehicle = request.data.get("type_vehicle", TypeVehicle.CAR)
             description = request.data.get("description")
-
+            
             if Vehicle.objects.filter(brand__iexact=brand, model__iexact=model).exists():
                 existing_vehicles = Vehicle.objects.exclude(brand__iexact=brand, model__iexact=model)
                 serializer = self.get_serializer(existing_vehicles, many=True)
