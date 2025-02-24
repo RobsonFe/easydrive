@@ -7,7 +7,7 @@ class LogErroMiddleware(MiddlewareMixin):
     def process_exception(self, request, exception):
         """Captura exceções reais e salva no MongoDB"""
         logger = MongoLogger()
-        usuario = request.user.username if request.user.is_authenticated else "Usuário não autenticado"
+        usuario = request.user.username if request.user.is_authenticated else "Usuário deslogado"
         endpoint = request.path
         metodo = request.method
         erro = str(exception)
@@ -21,7 +21,7 @@ class LogErroMiddleware(MiddlewareMixin):
         """Captura respostas HTTP de erro (status >= 400) e salva no MongoDB"""
         if response.status_code >= 400:
             logger = MongoLogger()
-            usuario = request.user.username if request.user.is_authenticated else "Usuário não autenticado"
+            usuario = request.user.username if request.user.is_authenticated else "Usuário deslogado"
             endpoint = request.path
             metodo = request.method
             # Converte response para string legível

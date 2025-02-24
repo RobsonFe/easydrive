@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.http import JsonResponse
-from datetime import datetime
+import datetime
 
 
 class MongoLogger:
@@ -9,7 +9,7 @@ class MongoLogger:
 
     def salvar_log(self, usuario, endpoint, metodo, erro):
         log = {
-            "data_hora": datetime.now(),
+            "data_hora": str(datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')),
             "usuario": usuario,
             "endpoint": endpoint,
             "metodo": metodo,
