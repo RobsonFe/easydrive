@@ -1,11 +1,12 @@
-from django.conf import settings
 from django.http import JsonResponse
 import datetime
+from api.repository import connection
 
 
 class MongoLogger:
     def __init__(self):
-        self.db = settings.MONGO_DB  # Conecta ao banco configurado no settings.py
+        self.db_handler = connection.DBConnectionMongoHandler().get_db_connection()
+        self.db = self.db_handler.get_collection("logs")
 
     def salvar_log(self, usuario, endpoint, metodo, erro):
         log = {
@@ -15,14 +16,15 @@ class MongoLogger:
             "metodo": metodo,
             "erro": erro
         }
-        self.db.logs.insert_one(log)  # Insere no MongoDB o dicionario do log
+        self.db.insert_one(log)  # Insere no MongoDB o dicionario do log
 
 
 def listar_logs(request):
-    db = settings.MONGO_DB
+    db_handler = connection.DBConnectionMongoHandler().get_db_connection()
+    db = db_handler.get_collection("logs")
 
     # Retorna todos os logs ordenados pela data_hora
-    logs = list(db.logs.find().sort("data_hora", -1))
+    logs = list(db.find().sort("data_hora", -1))
 
     for log in logs:
         log["_id"] = str(log["_id"])

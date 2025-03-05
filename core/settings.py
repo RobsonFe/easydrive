@@ -100,16 +100,16 @@ DATABASES = {
     }
 }
 
-# Banco de dados MongoDB
+# Banco de dados MongoDB antiga
 
-MONGO_USERNAME = quote_plus(os.getenv("MONGO_USERNAME"))
-MONGO_PASSWORD = quote_plus(os.getenv("MONGO_PASSWORD"))
-MONGO_HOST = os.getenv("MONGO_HOST")
-MONGO_DB_NAME = os.getenv("MONGO_DB_NAME")
+# MONGO_USERNAME = quote_plus(os.getenv("MONGO_USERNAME"))
+# MONGO_PASSWORD = quote_plus(os.getenv("MONGO_PASSWORD"))
+# MONGO_HOST = os.getenv("MONGO_HOST")
+# MONGO_DB_NAME = os.getenv("MONGO_DB_NAME")
 
-MONGO_URI = f"mongodb+srv://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_HOST}/{MONGO_DB_NAME}?retryWrites=true&w=majority"
-MONGO_CLIENT = MongoClient(MONGO_URI)
-MONGO_DB = MONGO_CLIENT[MONGO_DB_NAME]
+# MONGO_URI = f"mongodb+srv://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_HOST}/{MONGO_DB_NAME}?retryWrites=true&w=majority"
+# MONGO_CLIENT = MongoClient(MONGO_URI)
+# MONGO_DB = MONGO_CLIENT[MONGO_DB_NAME]
 
 # MONGO_CLIENT = MongoClient("mongodb://localhost:27017/")
 # MONGO_DB = MONGO_CLIENT["logs_erros"] 
