@@ -12,9 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from datetime import timedelta
 from pathlib import Path
-from urllib.parse import quote_plus
 from dotenv import load_dotenv
-from pymongo import MongoClient
 import os
 
 load_dotenv()
@@ -97,22 +95,12 @@ DATABASES = {
         'PASSWORD': os.getenv("SENHA_DO_BANCO"),
         'HOST': os.getenv("HOST_DO_BANCO"),
         'PORT': os.getenv("PORTA_DO_BANCO"),
+        "OPTIONS": {
+                "connect_timeout": 10,
+            },
+            "ATOMIC_REQUESTS": True,
     }
 }
-
-# Banco de dados MongoDB antiga
-
-# MONGO_USERNAME = quote_plus(os.getenv("MONGO_USERNAME"))
-# MONGO_PASSWORD = quote_plus(os.getenv("MONGO_PASSWORD"))
-# MONGO_HOST = os.getenv("MONGO_HOST")
-# MONGO_DB_NAME = os.getenv("MONGO_DB_NAME")
-
-# MONGO_URI = f"mongodb+srv://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_HOST}/{MONGO_DB_NAME}?retryWrites=true&w=majority"
-# MONGO_CLIENT = MongoClient(MONGO_URI)
-# MONGO_DB = MONGO_CLIENT[MONGO_DB_NAME]
-
-# MONGO_CLIENT = MongoClient("mongodb://localhost:27017/")
-# MONGO_DB = MONGO_CLIENT["logs_erros"] 
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -174,11 +162,14 @@ REST_FRAMEWORK = {
 SIMPLE_JWT ={
     "SLIDING_TOKEN_LIFETIME": timedelta(days=1),
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=2),
+    'CANCEL_TOKEN_LIFETIME': timedelta(days=15),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
+    'ALGORITHM': 'HS256',
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'AUTH_USER_MODEL': 'api.User',  
+    'AUTH_USER_MODEL': 'api.User', 
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',), 
     'USER_ID_FIELD': 'id',  
     'USER_ID_CLAIM': 'user_id',  
 }
