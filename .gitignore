@@ -45,7 +45,21 @@ myvenv
 .venv/
 venv/
 
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyo
+*.pyd
 
+# .gitignore
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.env
+.venv/
+venv/
+ENV/

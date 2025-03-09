@@ -11,31 +11,60 @@ A aplicação oferece recursos para o **administrador** gerenciar os aluguéis e
 - **Django Rest Framework** para o desenvolvimento da API.
 - **Banco de dados PostgreSQL** para persistência de dados.
 - **Swagger e OpenAPI** para a documentação da API.
-- **Next.js** para o front-end da aplicação.
-- **Flowbite** e **TailwindCSS** para a criação de interfaces interativas e responsivas no front-end.
 
-## Front-End
+## **Instalação**
 
-O front-end foi desenvolvido com **Next.js**, utilizando **Flowbite** e **TailwindCSS** para construção de interfaces de usuário dinâmicas e responsivas.
-
-[Projeto Front-end](https://github.com/RobsonFe/)
-
-## Instalação
-
-Para instalar as dependências do projeto, basta rodar o seguinte comando para instalar todos os pacotes necessários:
+- inicie Ambiente Virtual `.venv`
 
 ```bash
+python -m venv .venv
+```
+
+**Ative o ambiente virtual**:
+
+- No Windows (cmd.exe):
+
+  ```sh
+  .venv\Scripts\activate.bat
+  ```
+
+- No Windows (PowerShell):
+
+  ```sh
+  .venv\Scripts\Activate.ps1
+  ```
+
+- No Git Bash ou Linux/Mac:
+
+  ```sh
+  source .venv/Scripts/activate
+  ```
+
+Para instalar todas as ferramentas necessárias, basta utilizar o `requirements.txt`.
+
+```python
 pip install -r requirements.txt
 ```
 
-Além disso, é necessário configurar o banco de dados PostgreSQL. Abaixo estão os passos para a configuração do ambiente:
+## Deixei um `.env.local` para você configurar suas variáveis de ambiente.
 
-1. Crie um banco de dados PostgreSQL.
-2. Altere as configurações de conexão no arquivo `settings.py` do Django para refletir seu banco de dados local.
-3. Rode as migrações com o comando:
-   ```bash
-   python manage.py migrate
-   ```
+- Instale a Biblioteca
+
+```bash
+pip install python-dotenv
+```
+
+**Exemplo de como deve ficar o `.env`, precisa apenas colocar o seu caminho.**
+
+```json
+SENHA_DO_BANCO_DE_DADOS= ' admin'
+```
+
+O nome do arquivo
+
+```vscode
+.env
+```
 
 ## Endpoints da API
 
