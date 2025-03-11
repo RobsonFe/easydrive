@@ -10,6 +10,7 @@ from api.build.rent_builder import RentBuilder
 from api.build.user_builder import UserBuilder
 from api.build.vehicle_builder import VehicleBuilder
 from api.exepctions.constants.validation_request import ValidationRequest
+from api.swagger.user_mixin import UserCreateSwaggerMixin
 from api.model.client_model import Client
 from api.model.rent_model import Rental
 from api.model.user_model import User
@@ -22,11 +23,12 @@ import json
 from django.db import transaction
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class UserCreateView(generics.CreateAPIView):
+class UserCreateView(UserCreateSwaggerMixin,generics.CreateAPIView):
     
     permission_classes = [AllowAny]
 
@@ -37,7 +39,7 @@ class UserCreateView(generics.CreateAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
-    def post(self, request, *args, **kwargs):
+    def handle_post(self, request, *args, **kwargs):
 
         try:
             username = request.data.get('username')

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "api",
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -149,6 +150,8 @@ REST_FRAMEWORK = {
     # Configuração da paginação da API.
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+    #Configuração do Swagger
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     # Aceita data e hora no formato brasileiro
     'DATE_FORMAT': "%d-%m-%Y",
     'DATETIME_FORMAT': "%d-%m-%Y %H:%M",
@@ -173,3 +176,34 @@ SIMPLE_JWT ={
     'USER_ID_FIELD': 'id',  
     'USER_ID_CLAIM': 'user_id',  
 }
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'EasyDrive',
+    'DESCRIPTION': 'Esta é a documentação da API EasyDrive, um sistema de gerenciamento de alugueis de veiculos.',  
+    'VERSION': '1.0.0', 
+    'TERMS_OF_SERVICE': 'github.io//RobsonFe',
+    'CONTACT': {
+        'name': 'Robson Ferreira',
+        'email': 'robsonfe.dev@gmail.com',
+        },
+    'LICENSE': {
+        'name': 'EULA License',
+        'url': 'https://www.eula.com',
+        },
+    'SCHEMA_COERCE_PATH_PK_SUFFIX': True,
+    'TAGS': [
+        {'name': 'Usuário', 'description': 'Configurações referentes aos usuários do sistema'},
+    ],
+    'SORT_OPERATIONS': False,  # Mantém a ordem definida das tags
+    'ENUM_NAME_OVERRIDES': {},  # Evita que o Spectacular gere categorias extras
+    'SCHEMA_PATH_PREFIX': '/api/v1', # Prefixo para os endpoints  
+    'ENUM_GENERATE_CHOICE_DESCRIPTION': True,
+    'ENUM_SUFFIX': 'Type',
+    'POSTPROCESSING_HOOKS': [
+        'api.utils.allowed_tags.filter_endpoints_by_allowed_tags', # Esse hook filtra os endpoints que não possuem uma das tags permitidas
+    ],
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
+    'SERVE_INCLUDE_SCHEMA': True,
+    "COMPONENT_SPLIT_REQUEST": False,
+}
+
