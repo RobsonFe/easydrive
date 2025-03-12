@@ -4,8 +4,8 @@ from api.repository import connection
 
 
 class MongoLogger:
-    def __init__(self):
-        self.db_handler = connection.DBConnectionMongoHandler().get_db_connection()
+    def __init__(self, mongodb=None):
+        self.db_handler = mongodb or connection.DBConnectionMongoHandler().get_db_connection()
         self.db = self.db_handler.get_collection("logs")
 
     def salvar_log(self, usuario, endpoint, metodo, erro):
@@ -19,9 +19,9 @@ class MongoLogger:
         self.db.insert_one(log)  # Insere no MongoDB o dicionario do log
 
 
-def listar_logs(request):
-    db_handler = connection.DBConnectionMongoHandler().get_db_connection()
-    db = db_handler.get_collection("logs")
+def listar_logs(self,request, mongo=None):
+    self.mongodb = mongo or connection.DBConnectionMongoHandler().get_db_connection().get_collection("logs")
+    db = self.mongodb
 
     # Retorna todos os logs ordenados pela data_hora
     logs = list(db.find().sort("data_hora", -1))
