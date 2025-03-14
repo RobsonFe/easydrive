@@ -39,7 +39,7 @@ class UserCreateView(UserCreateSwaggerMixin,generics.CreateAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
-    def handle_post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
 
         try:
             username = request.data.get('username')
