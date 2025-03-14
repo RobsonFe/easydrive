@@ -19,9 +19,9 @@ class MongoLogger:
         self.db.insert_one(log)  # Insere no MongoDB o dicionario do log
 
 
-def listar_logs(self,request, mongo=None):
-    self.mongodb = mongo or connection.DBConnectionMongoHandler().get_db_connection().get_collection("logs")
-    db = self.mongodb
+def listar_logs(request, mongo=None):
+    mongodb = mongo or connection.DBConnectionMongoHandler().get_db_connection().get_collection("logs")
+    db = mongodb
 
     # Retorna todos os logs ordenados pela data_hora
     logs = list(db.find().sort("data_hora", -1))
