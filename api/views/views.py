@@ -275,7 +275,6 @@ class RentCreateView(generics.CreateAPIView):
                 {
                     "type": "send_notification",
                     "message": {
-                        "vehicle_id": _vehicle.id,
                         "vehicle_brand": _vehicle.brand,
                         "vehicle_model": _vehicle.model,
                         "vehicle_year": _vehicle.year,
