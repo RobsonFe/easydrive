@@ -100,10 +100,19 @@ DATABASES = {
         'HOST': os.getenv("HOST_DO_BANCO"),
         'PORT': os.getenv("PORTA_DO_BANCO"),
         "OPTIONS": {
-                "connect_timeout": 10,
-            },
-            "ATOMIC_REQUESTS": True,
+            "connect_timeout": 10,
+        },
+        "ATOMIC_REQUESTS": True,
     }
+}
+# Configuração do Redis com o Channels
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
 }
 
 # Password validation
@@ -153,7 +162,7 @@ REST_FRAMEWORK = {
     # Configuração da paginação da API.
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
-    #Configuração do Swagger
+    # Configuração do Swagger
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     # Aceita data e hora no formato brasileiro
     'DATE_FORMAT': "%d-%m-%Y",
@@ -165,7 +174,7 @@ REST_FRAMEWORK = {
     ),
 }
 
-SIMPLE_JWT ={
+SIMPLE_JWT = {
     "SLIDING_TOKEN_LIFETIME": timedelta(days=1),
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=2),
     'CANCEL_TOKEN_LIFETIME': timedelta(days=15),
@@ -174,39 +183,39 @@ SIMPLE_JWT ={
     'UPDATE_LAST_LOGIN': True,
     'ALGORITHM': 'HS256',
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'AUTH_USER_MODEL': 'api.User', 
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',), 
-    'USER_ID_FIELD': 'id',  
-    'USER_ID_CLAIM': 'user_id',  
+    'AUTH_USER_MODEL': 'api.User',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
 }
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'EasyDrive',
-    'DESCRIPTION': 'Esta é a documentação da API EasyDrive, um sistema de gerenciamento de alugueis de veiculos.',  
-    'VERSION': '1.0.0', 
+    'DESCRIPTION': 'Esta é a documentação da API EasyDrive, um sistema de gerenciamento de alugueis de veiculos.',
+    'VERSION': '1.0.0',
     'TERMS_OF_SERVICE': 'github.io//RobsonFe',
     'CONTACT': {
         'name': 'Robson Ferreira',
         'email': 'robsonfe.dev@gmail.com',
-        },
+    },
     'LICENSE': {
         'name': 'EULA License',
         'url': 'https://www.eula.com',
-        },
+    },
     'SCHEMA_COERCE_PATH_PK_SUFFIX': True,
     'TAGS': [
         {'name': 'Usuário', 'description': 'Configurações referentes aos usuários do sistema'},
     ],
     'SORT_OPERATIONS': False,  # Mantém a ordem definida das tags
     'ENUM_NAME_OVERRIDES': {},  # Evita que o Spectacular gere categorias extras
-    'SCHEMA_PATH_PREFIX': '/api/v1', # Prefixo para os endpoints  
+    'SCHEMA_PATH_PREFIX': '/api/v1',  # Prefixo para os endpoints
     'ENUM_GENERATE_CHOICE_DESCRIPTION': True,
     'ENUM_SUFFIX': 'Type',
     'POSTPROCESSING_HOOKS': [
-        'api.utils.allowed_tags.filter_endpoints_by_allowed_tags', # Esse hook filtra os endpoints que não possuem uma das tags permitidas
+        # Esse hook filtra os endpoints que não possuem uma das tags permitidas
+        'api.utils.allowed_tags.filter_endpoints_by_allowed_tags',
     ],
     "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
     'SERVE_INCLUDE_SCHEMA': True,
     "COMPONENT_SPLIT_REQUEST": False,
 }
-

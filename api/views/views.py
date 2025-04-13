@@ -22,14 +22,17 @@ import logging
 import json
 from django.db import transaction
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from django.utils import timezone
 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class UserCreateView(UserCreateSwaggerMixin,generics.CreateAPIView):
-    
+class UserCreateView(UserCreateSwaggerMixin, generics.CreateAPIView):
+
     permission_classes = [AllowAny]
 
     def __init__(self, validate: Optional[ValidationRequest] = None, **kwargs: logging) -> None:
@@ -65,7 +68,8 @@ class UserCreateView(UserCreateSwaggerMixin,generics.CreateAPIView):
 
             serializer = self.get_serializer(user)
 
-            logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
+            logger.info(json.dumps(serializer.data,
+                        indent=4, ensure_ascii=False))
 
             return Response({"message": "Usuário criado com sucesso!", "result": serializer.data}, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -73,9 +77,9 @@ class UserCreateView(UserCreateSwaggerMixin,generics.CreateAPIView):
 
 
 class UserUpdateView(generics.UpdateAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     serializer_class = UserUpdateSerializer
     queryset = User.objects.all()
 
@@ -97,7 +101,7 @@ class UserUpdateView(generics.UpdateAPIView):
 
             if User.objects.filter(username=username).exists():
                 return Response({'error': 'O username informado está em uso'}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             if User.objects.filter(cpf=cpf).exists():
                 return Response({'error': 'O CPF informado está em uso'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -112,7 +116,8 @@ class UserUpdateView(generics.UpdateAPIView):
 
             serializer = self.get_serializer(user)
 
-            logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
+            logger.info(json.dumps(serializer.data,
+                        indent=4, ensure_ascii=False))
 
             return Response({"message": "Usuário atualizado com sucesso!", "result": serializer.data}, status=status.HTTP_200_OK)
         except Exception as e:
@@ -120,14 +125,14 @@ class UserUpdateView(generics.UpdateAPIView):
 
 
 class ClientCreateView(generics.CreateAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     serializer_class = ClientDetailsSerializer
     queryset = Client.objects.all()
 
     def post(self, request, *args, **kwargs):
-        
+
         user_id = request.data.get('user')
 
         try:
@@ -154,9 +159,9 @@ class ClientCreateView(generics.CreateAPIView):
 
 
 class UserListView(generics.ListAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     queryset = User.objects.all()
     serializer_class = UserListSerializer
 
@@ -167,9 +172,9 @@ class UserListView(generics.ListAPIView):
 
 
 class ClientWithUserView(generics.ListAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     serializer_class = ClientSerializer
     queryset = Client.objects.all()
 
@@ -183,9 +188,9 @@ class ClientWithUserView(generics.ListAPIView):
 
 
 class ClientDetailView(generics.RetrieveAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
 
@@ -194,7 +199,8 @@ class ClientDetailView(generics.RetrieveAPIView):
         try:
             client = self.get_queryset().get(id=client_id)
             serializer = self.get_serializer(client)
-            logger.info(json.dumps(serializer.data,indent=4, ensure_ascii=False))
+            logger.info(json.dumps(serializer.data,
+                        indent=4, ensure_ascii=False))
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Client.DoesNotExist:
@@ -202,9 +208,9 @@ class ClientDetailView(generics.RetrieveAPIView):
 
 
 class ClientListView(generics.ListAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     queryset = Client.objects.all()
     serializer_class = ClientDetailsSerializer
 
@@ -218,7 +224,7 @@ class ClientListView(generics.ListAPIView):
 
 
 class RentCreateView(generics.CreateAPIView):
-    
+
     permission_classes = [IsAuthenticated]
 
     def __init__(self, validate: Optional[ValidationRequest] = None, **kwargs: logging) -> None:
@@ -261,6 +267,26 @@ class RentCreateView(generics.CreateAPIView):
             rental.save()
 
             serializer = self.get_serializer(rental)
+
+            # enviar notificação via WebSocket
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                "vehicle_notifications",  # nome do grupo no consumer
+                {
+                    "type": "send_notification",
+                    "message": {
+                        "vehicle_id": _vehicle.id,
+                        "vehicle_brand": _vehicle.brand,
+                        "vehicle_model": _vehicle.model,
+                        "vehicle_year": _vehicle.year,
+                        "vehicle_quantity": _vehicle.quantity,
+                        "vehicle_type_vehicle": _vehicle.type_vehicle,
+                        "vehicle_description": _vehicle.description,
+                        "status": "alugado",
+                        "timestamp": timezone.now().isoformat()
+                    }
+                }
+            )
             # logger.info(json.dumps(serializer.data, indent=4, ensure_ascii=False))
 
             return Response({"message": "Aluguel criado com sucesso!", "result": serializer.data},
@@ -276,9 +302,9 @@ class RentCreateView(generics.CreateAPIView):
 
 
 class RentServiceUpdateView(generics.UpdateAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     queryset = Rental.objects.all()
     serializer_class = RentServiceUpdateSerializer
 
@@ -330,9 +356,9 @@ class RentServiceUpdateView(generics.UpdateAPIView):
 
 
 class RentListView(generics.ListAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     queryset = Rental.objects.all().order_by('start_date')
     serializer_class = RentListSerializer
 
@@ -343,9 +369,9 @@ class RentListView(generics.ListAPIView):
 
 
 class VehicleListView(generics.ListAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     queryset = Vehicle.objects.all().order_by('brand')
     serializer_class = VehicleSerializer
 
@@ -356,9 +382,9 @@ class VehicleListView(generics.ListAPIView):
 
 
 class VehicleListIsNotAvailableView(generics.ListAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     queryset = Vehicle.objects.all().order_by('brand').filter(is_available=False)
     serializer_class = VehicleSerializer
 
@@ -369,10 +395,11 @@ class VehicleListIsNotAvailableView(generics.ListAPIView):
 
 
 class VehicleListByCarView(generics.ListAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
-    queryset = Vehicle.objects.all().order_by('brand').filter(type_vehicle=TypeVehicle.CAR)
+
+    queryset = Vehicle.objects.all().order_by(
+        'brand').filter(type_vehicle=TypeVehicle.CAR)
     serializer_class = VehicleSerializer
 
     def get(self, request, *args, **kwargs):
@@ -382,10 +409,11 @@ class VehicleListByCarView(generics.ListAPIView):
 
 
 class VehicleListByMotoView(generics.ListAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
-    queryset = Vehicle.objects.all().order_by('brand').filter(type_vehicle=TypeVehicle.MOTORCYCLE)
+
+    queryset = Vehicle.objects.all().order_by(
+        'brand').filter(type_vehicle=TypeVehicle.MOTORCYCLE)
     serializer_class = VehicleSerializer
 
     def get(self, request, *args, **kwargs):
@@ -395,9 +423,9 @@ class VehicleListByMotoView(generics.ListAPIView):
 
 
 class VehicleCreateView(generics.CreateAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
 
@@ -411,12 +439,13 @@ class VehicleCreateView(generics.CreateAPIView):
             description = request.data.get("description")
 
             if Vehicle.objects.filter(brand__iexact=brand, model__iexact=model).exists():
-                existing_vehicles = Vehicle.objects.exclude(brand__iexact=brand, model__iexact=model)
+                existing_vehicles = Vehicle.objects.exclude(
+                    brand__iexact=brand, model__iexact=model)
                 serializer = self.get_serializer(existing_vehicles, many=True)
                 return Response({"message": "Modelo já registrado.", "result": serializer.data}, status=status.HTTP_200_OK)
 
             builder = VehicleBuilder()
-            
+
             vehicle = (
                 builder.set_brand(brand)
                 .set_model(model)
@@ -440,9 +469,9 @@ class VehicleCreateView(generics.CreateAPIView):
 
 
 class RentDeleteView(generics.DestroyAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     queryset = Rental.objects.all()
     serializer_class = RentSerializer
 
@@ -458,9 +487,9 @@ class RentDeleteView(generics.DestroyAPIView):
 
 
 class VehicleDeleteView(generics.DestroyAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
 
@@ -473,12 +502,12 @@ class VehicleDeleteView(generics.DestroyAPIView):
             return Response({"error": "Veiculo não encontrado."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": f"Erro ao excluir Veiculo: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
 
 class ClientDeleteView(generics.DestroyAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
 
@@ -491,12 +520,12 @@ class ClientDeleteView(generics.DestroyAPIView):
             return Response({"error": "Cliente não encontrado."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": f"Erro ao excluir cliente: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
 
 class UserDeleteView(generics.DestroyAPIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
