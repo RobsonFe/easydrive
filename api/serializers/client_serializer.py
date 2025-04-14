@@ -9,7 +9,7 @@ from api.serializers.user_serializer import UserSerializer
 
 class ClientDetailsSerializer(serializers.ModelSerializer):
     client_data = UserSerializer(source='user')
-    
+
     class Meta:
         model = Client
         fields = ['id', 'user', 'total_rentals', 'client_data']
@@ -40,7 +40,6 @@ class VehicleSerializer(serializers.ModelSerializer):
         fields = ['id', 'brand', 'model', 'year', 'quantity',
                   'type_vehicle', 'description', 'is_available']
         extra_kwargs = {'is_available': {'read_only': True}}
-
 
 
 class RentListSerializer(serializers.ModelSerializer):
