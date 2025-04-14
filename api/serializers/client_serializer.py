@@ -26,8 +26,6 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class RentSerializer(serializers.ModelSerializer):
-    id = serializers.CharField(source='id', read_only=True)
-
     class Meta:
         model = Rental
         fields = '__all__'  # Serializa todos os campos do modelo Rental
