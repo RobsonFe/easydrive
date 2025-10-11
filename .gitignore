@@ -51,41 +51,61 @@ __pycache__/
 *$py.class
 *.pyo
 *.pyd
+*.pyc
 
-# .gitignore
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.pyo
-*.pyd
-.env
-.venv/
-venv/
-ENV/
-
-# others
-
+# Django
 *.log
 *.pot
-*.pyc
-__pycache__/
 local_settings.py
-media
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+static/
+
+# Environment variables
 .env
-.venv
-env/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Virtual environments
+.venv/
 venv/
+env/
 ENV/
 env.bak/
 venv.bak/
-cvld/__pycache__/settings.cpython-312.pyc
-mock
-.idea
-venv
-.pytest_cache
-~$2662A420.xlsx
-2662A420.xlsx
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+~$*.xlsx
+~$*.docx
 teste.py
-.vscode
-*.sqlite3
+
+# Migrations (opcional - remova se quiser versionar)
+# */migrations/*.py
+# !*/migrations/__init__.py
