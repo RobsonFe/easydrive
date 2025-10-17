@@ -115,6 +115,13 @@ CHANNEL_LAYERS = {
     },
 }
 
+# Configurações do MongoDB
+
+MONGO_USERNAME = os.getenv("MONGO_USERNAME", default="")
+MONGO_PASSWORD = os.getenv("MONGO_PASSWORD", default="")
+MONGO_HOST = os.getenv("MONGO_HOST", default="localhost")
+MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", default="ativosdb")
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
