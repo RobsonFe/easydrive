@@ -1,11 +1,8 @@
-from .user_builder import  UserBuilder
-from .client_builder import ClientBuilder
-from .vehicle_builder import VehicleBuilder
-from .rent_builder import RentBuilder
+# Este arquivo foi esvaziado após a refatoração
+# Os builders foram movidos para seus respectivos apps:
+# - UserBuilder -> account.builders
+# - ClientBuilder -> client.builders
+# - VehicleBuilder -> vehicle.builders
+# - RentBuilder -> rent.builders
 
-__All__ = [
-    "UserBuilder",
-    "ClientBuilder",
-    "VehicleBuilder",
-    "RentBuilder"
-]
+__all__ = []

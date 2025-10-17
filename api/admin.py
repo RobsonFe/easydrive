@@ -1,22 +1,4 @@
-from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from api.models import User 
-
-class CustomUserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'name', 'cpf', 'is_staff', 'is_active')
-    list_filter = ('is_staff', 'is_active')
-    fieldsets = (
-        (None, {'fields': ('username', 'password')}),
-        ('Informações Pessoais', {'fields': ('name', 'email', 'cpf', 'address', 'phone')}),
-        ('Permissões', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
-    )
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('username', 'email', 'name', 'cpf', 'password1', 'password2'),
-        }),
-    )
-    search_fields = ('username', 'name', 'email', 'cpf')
-    ordering = ('username',)
-
-admin.site.register(User, CustomUserAdmin)
+# Este arquivo foi esvaziado após a refatoração
+# A configuração do admin do User foi movida para account.admin
+# Os demais modelos (Client, Vehicle, Rental) têm suas configurações
+# nos respectivos apps: client.admin, vehicle.admin, rent.admin

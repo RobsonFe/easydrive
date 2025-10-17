@@ -1,12 +1,8 @@
-from .user_model import User
-from .client_model import Client
-from .vehicle_model import Vehicle
-from .rent_model import Rental
+# Este arquivo foi esvaziado após a refatoração
+# Os modelos foram movidos para seus respectivos apps:
+# - User -> account.models
+# - Client -> client.models
+# - Vehicle -> vehicle.models
+# - Rental -> rent.models
 
-
-__All__ = [
-    "User",
-    "Client",
-    "Vehicle",
-    "Rent",
-]
+__all__ = []

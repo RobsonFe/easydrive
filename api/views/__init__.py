@@ -1,25 +1,13 @@
-from .views import ClientCreateView, UserCreateView, VehicleCreateView, RentCreateView, UserListView, ClientListView, ClientDetailView, ClientWithUserView, RentListView, UserUpdateView, RentDeleteView, VehicleDeleteView, VehicleListView, VehicleListByCarView, VehicleListByMotoView, RentServiceUpdateView,ClientDeleteView,UserDeleteView
-from .authentication_view import LoginView, LogoutView
+# Este arquivo foi esvaziado após a refatoração
+# As views foram movidas para seus respectivos apps:
+# - UserCreateView, UserUpdateView, UserListView, UserDeleteView, LoginView, LogoutView -> account.views
+# - ClientCreateView, ClientDetailView, ClientListView, ClientWithUserView, ClientDeleteView -> client.views
+# - VehicleCreateView, VehicleListView, VehicleListByCarView, VehicleListByMotoView, VehicleDeleteView -> vehicle.views
+# - RentCreateView, RentListView, RentServiceUpdateView, RentDeleteView -> rent.views
 
-__All__ = [
-    "ClientCreateView",
-    "UserCreateView",
-    "VehicleCreateView",
-    "RentCreateView",
-    "UserListView",
-    "ClientListView",
-    "ClientDetailView",
-    "ClientWithUserView",
-    "RentListView",
-    "UserUpdateView",
-    "RentDeleteView",
-    "VehicleDeleteView",
-    "VehicleListView",
-    "VehicleListByCarView",
-    "VehicleListByMotoView",
-    "RentServiceUpdateView",
-    "ClientDeleteView",
-    "UserDeleteView",
-    "LoginView",
-    "LogoutView",
+# Mantendo apenas HealthCheckView no api.views
+from .views import HealthCheckView
+
+__all__ = [
+    "HealthCheckView",
 ]
