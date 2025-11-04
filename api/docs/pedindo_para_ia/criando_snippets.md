@@ -22,28 +22,32 @@ Aqui está o guia para configurar esse "atalho" no seu VS Code:
 
 ```json
 {
-  "Tarefa EasyDrive": {
-    "prefix": "!tarefa",
-    "body": [
-      "# Prefeito, vamos implementar uma nova funcionalidade no Easydrive",
-      "",
-      "## 1. Objetivo da Tarefa",
-      "> ${1:Descreva o que você quer aqui.}",
-      "",
-      "## 2. Contexto e Localização",
-      "> Arquivos que serão modificados:",
-      "> - ${2:apps/modulo/arquivo.py}",
-      "",
-      "## 3. Requisitos Detalhados",
-      "* ${3:Requisito 1}",
-      "* ${4:Requisito 2}",
-      "",
-      "---",
-      "**Importante:** Siga rigorosamente TODAS as regras e padrões (Docstrings, Type Hints, N+1, Builders, etc) definidos no arquivo de instruções do projeto (`.github/copilot-instructions.md`)."
-    ],
-    "description": "Gera um template de prompt para pedir uma nova tarefa no EasyDrive."
+	"Tarefa EasyDrive": {
+	  "prefix": "!tarefa",
+	  "body": [
+		"# Prefeito, vamos implementar uma nova funcionalidade no Easydrive",
+		"",
+		"## 1. Objetivo da Tarefa",
+		"> ${1:Descreva o que você quer aqui.}",
+		"",
+		"## 2. Contexto e Localização",
+		"> Arquivos que serão modificados:",
+		"> - ${2:apps/modulo/arquivo.py}",
+		"",
+		"## 3. Requisitos Detalhados",
+		"* ${3:Requisito 1}",
+		"* ${4:Requisito 2}",
+		"",
+		"---",
+		"**Importante:** Siga rigorosamente TODAS as regras e padrões (Docstrings, Type Hints, N+1, Builders, etc) definidos no arquivo de instruções do projeto (`.github/copilot-instructions.md`).",
+		"** Não adicione nada além do que foi pedido.**",
+		"** Sempre escreva testes automatizados para as novas funcionalidades.**",
+		"** Certifique-se de que o código gerado está 100% conforme as instruções do projeto.**",
+		"**Leia as regras antes de começar a implementar a tarefa, elas ficam em docs/pedindi_para_ia.**"
+	  ],
+	  "description": "Gera um template de prompt para pedir uma nova tarefa no EasyDrive."
+	}
   }
-}
 ```
 
 7.  **Salve** o arquivo `markdown.json` e **feche-o**.
