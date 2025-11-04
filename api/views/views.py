@@ -234,7 +234,6 @@ class RentCreateView(generics.CreateAPIView):
     queryset = Rental.objects.all()
     serializer_class = RentSerializer
 
-    @transaction.atomic
     def post(self, request):
 
         client_id = request.data.get("client")
@@ -268,10 +267,9 @@ class RentCreateView(generics.CreateAPIView):
 
             serializer = self.get_serializer(rental)
 
-            # enviar notificação via WebSocket
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
-                "vehicle_notifications",  # nome do grupo no consumer
+                "vehicle_notifications",
                 {
                     "type": "send_notification",
                     "message": {
@@ -286,7 +284,6 @@ class RentCreateView(generics.CreateAPIView):
                     }
                 }
             )
-            # logger.info(json.dumps(serializer.data, indent=4, ensure_ascii=False))
 
             return Response({"message": "Aluguel criado com sucesso!", "result": serializer.data},
                             status=status.HTTP_201_CREATED)
@@ -307,7 +304,6 @@ class RentServiceUpdateView(generics.UpdateAPIView):
     queryset = Rental.objects.all()
     serializer_class = RentServiceUpdateSerializer
 
-    @transaction.atomic
     def update(self, request, *args, **kwargs):
 
         end_date = request.data.get("end_date")
