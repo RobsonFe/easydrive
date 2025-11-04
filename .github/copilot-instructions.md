@@ -5,7 +5,6 @@
 Este projeto é uma **API RESTful** para gerenciamento de **aluguel de veículos** construída com Django Rest Framework (DRF).
 
 * **Stack Principal:** Python 3.x, Django 5.1.1, Django Rest Framework 3.15.2, PostgreSQL, MongoDB (logs), Redis (WebSocket), Channels (notificações em tempo real).
-* **Padrão de Projeto:** Arquitetura em camadas com uso de **Builder Pattern**, **Repository Pattern** e **Null Object Pattern**.
 * **Objetivo:** Fornecer endpoints para gerenciamento de usuários, clientes, veículos e aluguéis com autenticação JWT, logs centralizados e notificações em tempo real.
 
 ## 2. Componentes Principais e Módulos
@@ -14,7 +13,6 @@ Este projeto é uma **API RESTful** para gerenciamento de **aluguel de veículos
 * `api/model/`: Modelos de domínio (`User`, `Client`, `Vehicle`, `Rental`).
 * `api/serializers/`: Serializers DRF para validação e transformação de dados.
 * `api/views/`: Views baseadas em GenericAPIView do DRF.
-* `api/build/`: Builders para construção de objetos de domínio.
 * `api/repositories/`: Adaptadores para MongoDB (síncrono e assíncrono).
 * `api/middleware/`: Middleware customizado para logging automático.
 * `api/swagger/`: Mixins para documentação Swagger/OpenAPI.
@@ -301,7 +299,6 @@ Antes de criar qualquer código, verificar:
 - [ ] `select_related`/`prefetch_related` em list views
 - [ ] Permissões explícitas nas views
 - [ ] Validações no serializer, não na view
-- [ ] Usar builders para criação de objetos
 - [ ] Response com mensagens claras
 - [ ] Tratamento de exceções adequado
 - [ ] Código PEP 8 compliant
