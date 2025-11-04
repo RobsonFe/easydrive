@@ -78,7 +78,7 @@ Esta é a parte mais importante para a automação funcionar.
       * Você salva seu guia do projeto em `.github/copilot-instructions.md`.
       * Você salva o snippet JSON no seu VS Code.
 2.  **Uso Diário (Seu novo "pedir corretamente"):**
-      * Abra o chat do Copilot.
+      * Abra o arquivo `prompt.md`.
       * Digite `!tarefa` e pressione `TAB`.
       * O template aparece. Preencha as seções 1, 2 e 3.
       * Envie o prompt.
