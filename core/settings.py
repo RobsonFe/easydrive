@@ -34,7 +34,7 @@ APPEND_SLASH = True
 
 ALLOWED_HOSTS = []
 
-AUTH_USER_MODEL = 'accounts.User'
+AUTH_USER_MODEL = 'api.accounts.User'
 
 ASGI_APPLICATION = "core.asgi.application"
 
@@ -50,8 +50,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     "corsheaders",
-    "accounts",
     "api",
+    "api.accounts.apps.AccountsConfig",
     "api.auth.apps.AuthConfig",
     "api.vehicle.apps.VehicleConfig",
     "api.client.apps.ClientConfig",
@@ -215,7 +215,7 @@ SIMPLE_JWT = {
     "ALGORITHM": "HS256",
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
-    "AUTH_USER_MODEL": "accounts.User",
+    "AUTH_USER_MODEL": "api.accounts.User",
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
 }

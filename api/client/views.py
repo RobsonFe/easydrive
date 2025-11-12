@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 from client.serializer import ClientDetailsSerializer, ClientSerializer
 from client.models import Client
-from accounts.models import User
+from api.accounts.models import User
 
 class ClientCreateView(generics.CreateAPIView):
 

@@ -1,8 +1,8 @@
 
 from rest_framework.response import Response
-from accounts.serializer import UserSerializer, UserUpdateSerializer
-from accounts.service import UserService
-from accounts.validation import UserValidatorMixin
+from api.accounts.serializer import UserSerializer, UserUpdateSerializer
+from api.accounts.service import UserService
+from api.accounts.validation import UserValidatorMixin
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated

@@ -1,6 +1,6 @@
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
-from accounts.models import User
+from api.accounts.models import User
 import uuid
 import os
 

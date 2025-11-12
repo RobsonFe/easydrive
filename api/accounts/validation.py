@@ -1,6 +1,6 @@
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from rest_framework import status
-from accounts.models import User
+from api.accounts.models import User
 
 class UserValidatorMixin:
     """Mixin com validações relacionadas ao usuário."""

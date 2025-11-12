@@ -2,7 +2,7 @@
 from rest_framework import serializers
 from client.models import Client
 from vehicle.models import TypeVehicle
-from accounts.serializer import UserSerializer
+from api.accounts.serializer import UserSerializer
 
 
 class ClientDetailsSerializer(serializers.ModelSerializer):

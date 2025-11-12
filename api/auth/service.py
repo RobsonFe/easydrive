@@ -1,5 +1,5 @@
 from django.contrib.auth.hashers import check_password
-from accounts.models import User
+from api.accounts.models import User
 from api.exceptions import ValidationError
 from auth.types import SiginDataType, UserDataType
 
