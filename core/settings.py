@@ -30,9 +30,11 @@ SECRET_KEY = 'django-insecure-nhyr5kxl-0jw0z0=#!9uhj50aq+b)q@yb(jh2%o36ooyr9m*55
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+APPEND_SLASH = True
+
 ALLOWED_HOSTS = []
 
-AUTH_USER_MODEL = 'api.User'
+AUTH_USER_MODEL = 'accounts.User'
 
 ASGI_APPLICATION = "core.asgi.application"
 
@@ -155,8 +157,11 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
+# Diretório onde os arquivos estáticos serão coletados
+STATIC_URL = "static/"
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
 
-STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -181,19 +186,33 @@ REST_FRAMEWORK = {
     ),
 }
 
+# SIMPLE_JWT = {
+#     "SLIDING_TOKEN_LIFETIME": timedelta(days=1),
+#     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=2),
+#     'CANCEL_TOKEN_LIFETIME': timedelta(days=15),
+#     'ROTATE_REFRESH_TOKENS': True,
+#     'BLACKLIST_AFTER_ROTATION': True,
+#     'UPDATE_LAST_LOGIN': True,
+#     'ALGORITHM': 'HS256',
+#     'AUTH_HEADER_TYPES': ('Bearer',),
+#     'AUTH_USER_MODEL': 'accounts.User',
+#     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+#     'USER_ID_FIELD': 'id',
+#     'USER_ID_CLAIM': 'user_id',
+# }
+
 SIMPLE_JWT = {
-    "SLIDING_TOKEN_LIFETIME": timedelta(days=1),
-    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=2),
-    'CANCEL_TOKEN_LIFETIME': timedelta(days=15),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
-    'UPDATE_LAST_LOGIN': True,
-    'ALGORITHM': 'HS256',
-    'AUTH_HEADER_TYPES': ('Bearer',),
-    'AUTH_USER_MODEL': 'api.User',
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=24),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=8),
+    "CANCEL_TOKEN_LIFETIME": timedelta(days=15),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ALGORITHM": "HS256",
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "AUTH_USER_MODEL": "accounts.User",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
 }
 
 SPECTACULAR_SETTINGS = {
