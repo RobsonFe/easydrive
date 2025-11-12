@@ -4,20 +4,43 @@
 
 Este projeto é uma **API RESTful** para gerenciamento de **aluguel de veículos** construída com Django Rest Framework (DRF).
 
-* **Stack Principal:** Python 3.x, Django 5.1.1, Django Rest Framework 3.15.2, PostgreSQL, MongoDB (logs), Redis (WebSocket), Channels (notificações em tempo real).
-* **Objetivo:** Fornecer endpoints para gerenciamento de usuários, clientes, veículos e aluguéis com autenticação JWT, logs centralizados e notificações em tempo real.
+* **Stack Principal:** Python 3.x, Django 5.1.1, Django Rest Framework 3.15.2, PostgreSQL, MongoDB (logs).
+* **Objetivo:** Fornecer endpoints para gerenciamento de usuários, clientes, veículos e aluguéis com autenticação JWT e logs centralizados.
+* **Arquitetura:** Modular por domínio (accounts, auth, client, vehicle, rent).
 
 ## 2. Componentes Principais e Módulos
 
-* `core/`: Configurações do Django (settings, urls, asgi, wsgi).
-* `api/model/`: Modelos de domínio (`User`, `Client`, `Vehicle`, `Rental`).
-* `api/serializers/`: Serializers DRF para validação e transformação de dados.
-* `api/views/`: Views baseadas em GenericAPIView do DRF.
+### Estrutura Modular
+
+O projeto está organizado em módulos por domínio, cada um contendo seus próprios models, serializers, views, services e urls:
+
+* `core/`: Configurações do Django (settings, urls, wsgi).
+* `api/accounts/`: Módulo de Contas (User model, views, serializers, services, validations).
+* `api/auth/`: Módulo de Autenticação (signin, signup, signout, services, validations, types).
+* `api/client/`: Módulo de Clientes (Client model, views, serializers).
+* `api/vehicle/`: Módulo de Veículos (Vehicle model, views, serializers).
+* `api/rent/`: Módulo de Aluguéis (Rental model, views, serializers).
 * `api/repositories/`: Adaptadores para MongoDB (síncrono e assíncrono).
 * `api/middleware/`: Middleware customizado para logging automático.
 * `api/swagger/`: Mixins para documentação Swagger/OpenAPI.
-* `api/consumers.py`: WebSocket consumers para notificações em tempo real.
-* `api/routing.py`: Rotas WebSocket.
+* `api/config/mongodb/`: Configurações MongoDB (connection handlers com Null Object Pattern).
+* `api/utils/`: Utilitários (hooks para Swagger, helpers).
+
+### Arquitetura de Cada Módulo
+
+Cada módulo segue a estrutura:
+
+```
+{module}/
+├── models.py          # Modelos do domínio
+├── serializer.py      # Serializers DRF
+├── views.py           # Views/Controllers
+├── service.py         # Camada de serviço (quando necessário)
+├── validation.py      # Validações customizadas (quando necessário)
+├── urls.py            # Rotas do módulo
+├── admin.py           # Configuração do admin Django
+└── tests.py           # Testes do módulo
+```
 
 ## 3. Fluxos de Trabalho do Desenvolvedor
 
@@ -31,8 +54,7 @@ Este projeto é uma **API RESTful** para gerenciamento de **aluguel de veículos
   - Aplicar: `python manage.py migrate`
 * **Executar Servidor:** 
   - HTTP: `python manage.py runserver`
-  - ASGI (WebSocket): `daphne -b 0.0.0.0 -p 8000 core.asgi:application`
-* **Testes:** Estrutura em `api/tests/`
+* **Testes:** Estrutura em cada módulo (`{module}/tests.py`)
 
 ## 4. Convenções e Padrões Específicos do Projeto
 
@@ -56,13 +78,19 @@ Este projeto é uma **API RESTful** para gerenciamento de **aluguel de veículos
 
 ### **Models (Django):**
 
-* **Localização:** `api/model/`
+* **Localização:** Cada módulo tem seu próprio `models.py`
 * **Convenções:**
-  - Usar UUID como PK para models principais (exceto User)
+  - UUID como PK para models principais (exceto User que usa int)
   - Incluir `created_at` e `updated_at` quando apropriado
   - Implementar `__str__()` retornando representação legível
   - Lógica de negócio no método `save()` quando necessário
   
+**Models Principais:**
+- `api.accounts.models.User` - Usuário do sistema (AbstractBaseUser, USERNAME_FIELD = 'email')
+- `api.client.models.Client` - Cliente (OneToOne com User, UUID PK)
+- `api.vehicle.models.Vehicle` - Veículo (UUID PK, TypeVehicle: Carro/Moto)
+- `api.rent.models.Rental` - Aluguel (FK para Client e Vehicle, UUID PK)
+
 **Exemplo:**
 ```python
 class Vehicle(models.Model):
@@ -73,13 +101,19 @@ class Vehicle(models.Model):
         id: Identificador único UUID do veículo.
         brand: Marca do veículo.
         model: Modelo do veículo.
+        year: Ano do veículo.
         quantity: Quantidade disponível em estoque.
+        type_vehicle: Tipo do veículo (Carro ou Moto).
+        description: Descrição do veículo.
         is_available: Calculado automaticamente baseado na quantity.
     """
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     brand = models.CharField(max_length=100)
     model = models.CharField(max_length=100)
+    year = models.PositiveIntegerField()
     quantity = models.PositiveIntegerField(default=0)
+    type_vehicle = models.CharField(max_length=10, choices=TypeVehicle.choices, default=TypeVehicle.CAR)
+    description = models.TextField(blank=True)
     is_available = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
@@ -90,40 +124,47 @@ class Vehicle(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.brand} {self.model}"
+        return f"{self.brand} - {self.model} - {self.year}"
 ```
 
 ### **Views (DRF):**
 
-* **Preferir:** `generics.CreateAPIView`, `ListAPIView`, `UpdateAPIView`, `DestroyAPIView`
+* **Preferir:** `generics.CreateAPIView`, `ListAPIView`, `UpdateAPIView`, `DestroyAPIView`, `RetrieveAPIView`, `APIView`
 * **Permissões:**
-  - `AllowAny`: Apenas para criação de usuário e login
+  - `AllowAny`: Apenas para signup e login
   - `IsAuthenticated`: Padrão para todos os endpoints protegidos
 * **Estrutura:**
   - Declarar `permission_classes` explicitamente
   - Declarar `serializer_class` e `queryset`
   - Sobrescrever métodos HTTP (post, get, patch, delete) para lógica customizada
-  - Usar builders para criação de objetos
+  - Criar objetos diretamente usando `Model.objects.create()` ou `Model.objects.create_user()`
   - Retornar Response com mensagens claras
+  - Usar Service Layer para lógica de negócio complexa
 
 **Exemplo:**
 ```python
-class VehicleListView(generics.ListAPIView):
+class RentListView(generics.ListAPIView):
     """
-    View para listar todos os veículos disponíveis.
+    View para listagem de aluguéis.
     
-    Retorna lista paginada de veículos ordenados por marca.
-    Requer autenticação.
+    Retorna lista paginada de aluguéis com dados aninhados
+    de cliente e veículo. Otimizada com select_related para
+    evitar N+1 queries.
     """
     permission_classes = [IsAuthenticated]
-    queryset = Vehicle.objects.select_related('category').order_by('brand')
-    serializer_class = VehicleSerializer
+    serializer_class = RentListSerializer
 
     def get_queryset(self):
         """
-        Otimiza queryset com select_related para evitar N+1.
+        Retorna queryset otimizado com select_related.
+        
+        Returns:
+            QuerySet de Rental com relacionamentos otimizados.
         """
-        return super().get_queryset()
+        return Rental.objects.select_related(
+            'client__user',  # Otimiza acesso a Client e User
+            'vehicle'         # Otimiza acesso a Vehicle
+        ).order_by('-start_date')
 ```
 
 ### **Serializers (DRF):**
@@ -167,91 +208,116 @@ class RentSerializer(serializers.ModelSerializer):
         return value
 ```
 
-### **Builders (Padrão Builder):**
+### **Service Layer Pattern:**
 
-* **Localização:** `api/build/`
-* **Uso Obrigatório:** Para criação de User, Client, Vehicle, Rental
-* **Estrutura:**
-  - Métodos `set_<field>()` retornam `self` para fluência
-  - Método `build()` cria e retorna o objeto
-  - Validações básicas no `build()`
+* **Localização:** `{module}/service.py`
+* **Uso:** Para lógica de negócio complexa que não pertence ao model ou view
+* **Exemplos:**
+  - `UserService` (api.accounts.service) - Gerenciamento de avatar
+  - `AuthenticationService` (api.auth.service) - Signin/signup
 
 **Exemplo:**
 ```python
-class VehicleBuilder:
+class UserService:
     """
-    Builder para construção fluente de objetos Vehicle.
-    
-    Exemplo:
-        vehicle = (VehicleBuilder()
-            .set_brand("Toyota")
-            .set_model("Corolla")
-            .set_year(2024)
-            .build())
+    Camada de serviço para operações do usuário.
     """
-    def __init__(self):
-        self._brand = ""
-        self._model = ""
-        self._year = 0
-        
-    def set_brand(self, brand: str) -> 'VehicleBuilder':
-        """Define a marca do veículo."""
-        self._brand = brand
-        return self
-        
-    def build(self) -> Vehicle:
+    def update_avatar(self, user: User, avatar) -> User:
         """
-        Constrói e retorna o objeto Vehicle.
+        Atualiza avatar se arquivo for enviado.
         
-        Returns:
-            Instância de Vehicle.
+        Args:
+            user: Instância do usuário.
+            avatar: Arquivo de imagem do avatar.
             
-        Raises:
-            ValueError: Se campos obrigatórios não foram preenchidos.
+        Returns:
+            User modificado (não salva).
         """
-        if not self._brand:
-            raise ValueError('Marca é obrigatória.')
-        return Vehicle(brand=self._brand, model=self._model, year=self._year)
+        # Lógica de atualização de avatar
+        return user
 ```
 
 ### **Repositories (MongoDB):**
 
 * **Localização:** `api/repositories/`
 * **Uso:** `MongoAdapter` (sync) ou `AsyncMongoAdapter` (async)
-* **Métodos:** `find_one`, `find_many`, `insert_one`, `update_one`, `delete_one`, `aggregate`
+* **Métodos:** `find_one`, `find_many`, `insert_one`, `update_one`, `delete_one`, `aggregate`, `count_documents`
 * **Resilência:** Usa Null Object Pattern para falhas de conexão
+
+**Exemplo:**
+```python
+from api.repositories.mongo_adapter import MongoAdapter
+
+mongo = MongoAdapter(collection_name="erros")
+mongo.save_error(user, endpoint, method, error, payload)
+```
 
 ### **Performance (Banco de Dados):**
 
 **🚨 CRÍTICO - EVITAR N+1:**
 
 ```python
-# ❌ ERRADO - Causa N+1
+# ❌ ERRADO - Causa N+1 queries ao acessar client.user ou vehicle
 class RentListView(generics.ListAPIView):
     queryset = Rental.objects.all()
     
-# ✅ CORRETO - Otimizado
+# ✅ CORRETO - Otimizado com select_related
 class RentListView(generics.ListAPIView):
-    queryset = Rental.objects.select_related(
-        'client__user', 
-        'vehicle'
-    ).prefetch_related(
-        'vehicle__category'
-    ).order_by('start_date')
+    permission_classes = [IsAuthenticated]
+    serializer_class = RentListSerializer
+    
+    def get_queryset(self):
+        """
+        Retorna queryset otimizado com select_related.
+        
+        Returns:
+            QuerySet de Rental com relacionamentos otimizados.
+        """
+        return Rental.objects.select_related(
+            'client__user',  # Otimiza acesso a Client e User
+            'vehicle'         # Otimiza acesso a Vehicle
+        ).order_by('-start_date')
+```
+
+**Relacionamentos e Serializers Aninhados:**
+
+```python
+# Serializer usando relacionamentos ForeignKey
+class RentListSerializer(serializers.ModelSerializer):
+    """
+    Serializer para listagem de aluguéis com dados aninhados.
+    
+    Inclui informações completas do cliente e veículo usando
+    relacionamentos ForeignKey.
+    """
+    client_data = ClientDetailsSerializer(source='client', read_only=True)
+    vehicle_data = VehicleSerializer(source='vehicle', read_only=True)
+
+    class Meta:
+        model = Rental
+        fields = [
+            'id',
+            'start_date',
+            'end_date',
+            'returned',
+            'client_data',
+            'vehicle_data',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = fields
 ```
 
 ### **Middleware:**
 
 * **LogErroMiddleware:** Captura erros automáticos e salva no MongoDB
+* **Localização:** `api/middleware/middlewares.py`
+* **Funcionalidades:**
+  - `process_request()`: Captura payload (sanitiza senhas/tokens)
+  - `process_exception()`: Captura exceções não tratadas → MongoDB
+  - `process_response()`: Captura respostas HTTP >= 400 → MongoDB
 * **Ordem:** Respeitar ordem no `settings.MIDDLEWARE`
 * **Sanitização:** Remove dados sensíveis (passwords, tokens) dos logs
-
-### **WebSocket (Channels):**
-
-* **Consumer:** Herdar de `AsyncWebsocketConsumer`
-* **Métodos:** `connect()`, `disconnect()`, `receive()`, `send_notification()`
-* **Groups:** Usar `channel_layer.group_send()` para broadcast
-* **Routing:** Definir em `api/routing.py`
 
 ### **Documentação Swagger:**
 
@@ -259,17 +325,22 @@ class RentListView(generics.ListAPIView):
 * **Tags:** Categorizar endpoints por domínio
 * **Examples:** Fornecer exemplos de request/response
 * **Filters:** Usar hook `filter_endpoints_by_allowed_tags`
+* **Mixin disponível:** `UserCreateSwaggerMixin` (api.swagger.user_mixin)
 
 ## 5. Autenticação e Segurança
 
 * **JWT:** djangorestframework-simplejwt
 * **Endpoints:**
-  - `/api/token/` - Obter access/refresh tokens
+  - `/api/token/` - Obter access/refresh tokens (padrão DRF)
   - `/api/token/refresh/` - Renovar access token
-  - `/api/v1/login/` - Login customizado
-  - `/api/v1/logout/` - Logout com blacklist
+  - `/api/v1/login` - Login customizado (SignInView)
+  - `/api/v1/signup` - Cadastro de usuário (SignUpView)
+  - `/api/v1/logout` - Logout com blacklist (SignOutView)
 * **Headers:** `Authorization: Bearer <access_token>`
 * **Configuração:** Tokens rotativos com blacklist habilitado
+  - Access token: 24 horas
+  - Refresh token: 8 dias
+* **User Model:** `api.accounts.User` (AbstractBaseUser, USERNAME_FIELD = 'email')
 
 ## 6. Variáveis de Ambiente
 
@@ -290,7 +361,32 @@ MONGO_HOST=localhost
 MONGO_DB_NAME=ativosdb
 ```
 
-## 7. Checklist de Implementação
+## 7. Arquitetura Modular e Dependências
+
+### Ordem de Dependências no INSTALLED_APPS:
+
+1. `api.accounts` (base - define User)
+2. `api.vehicle` (sem dependências de outros módulos)
+3. `api.client` (depende de accounts)
+4. `api.rent` (depende de vehicle e client)
+
+### Estrutura de URLs:
+
+O arquivo `api/urls.py` centraliza todas as rotas dos módulos:
+
+```python
+from django.urls import include, path
+
+urlpatterns = [
+    path('', include('api.accounts.urls')),
+    path('', include('api.auth.urls')),
+    path('', include('api.client.urls')),
+    path('', include('api.vehicle.urls')),
+    path('', include('api.rent.urls')),
+]
+```
+
+## 8. Checklist de Implementação
 
 Antes de criar qualquer código, verificar:
 
@@ -303,3 +399,42 @@ Antes de criar qualquer código, verificar:
 - [ ] Tratamento de exceções adequado
 - [ ] Código PEP 8 compliant
 - [ ] Nomes descritivos e autoexplicativos
+- [ ] Criar objetos diretamente (Model.objects.create() ou Model.objects.create_user())
+- [ ] Usar Service Layer para lógica de negócio complexa
+- [ ] Respeitar arquitetura modular (cada domínio em seu módulo)
+- [ ] Testes automatizados para novas funcionalidades
+
+## 9. Padrões de Projeto
+
+### Repository Pattern
+- `MongoAdapter` (síncrono) - `api/repositories/mongo_adapter.py`
+- `AsyncMongoAdapter` (assíncrono) - `api/repositories/async_mongo_adapter.py`
+- Métodos: find_one, find_many, insert_one, update_one, delete_one, aggregate, count_documents
+
+### Null Object Pattern
+- `NullCollection`, `NullDBConnection` - Resiliência para falhas de conexão MongoDB
+- `AsyncNullCollection`, `AsyncNullDBConnection` - Versões assíncronas
+- Localização: `api/config/mongodb/connection.py` e `async_connection.py`
+
+### Service Layer Pattern
+- `UserService` - `api/accounts/service.py` (gerenciamento de avatar)
+- `AuthenticationService` - `api/auth/service.py` (signin/signup)
+
+## 10. Lembretes Críticos
+
+1. **SEMPRE** usar docstrings, nunca comentários inline
+2. **SEMPRE** otimizar queries com `select_related`/`prefetch_related`
+3. **SEMPRE** criar objetos diretamente (sem Builders)
+4. **SEMPRE** declarar permissões explicitamente nas views
+5. **SEMPRE** fazer validações no serializer, não na view
+6. **NUNCA** causar N+1 queries
+7. **NUNCA** adicionar funcionalidades além do pedido
+8. **SEMPRE** escrever testes automatizados para novas funcionalidades
+9. **SEMPRE** usar Service Layer para lógica de negócio complexa
+10. **SEMPRE** respeitar a arquitetura modular (cada domínio em seu módulo)
+
+## Referências
+
+- README completo: `README.md`
+- Resumo rápido: `api/docs/pedindo_para_ia/REGRAS_PROJETO.md`
+- Regras do Cursor: `.cursorrules`

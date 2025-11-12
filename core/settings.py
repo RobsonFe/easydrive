@@ -30,16 +30,15 @@ SECRET_KEY = 'django-insecure-nhyr5kxl-0jw0z0=#!9uhj50aq+b)q@yb(jh2%o36ooyr9m*55
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+APPEND_SLASH = True
+
 ALLOWED_HOSTS = []
 
-AUTH_USER_MODEL = 'api.User'
-
-ASGI_APPLICATION = "core.asgi.application"
+AUTH_USER_MODEL = 'api.accounts.User'
 
 # Application definition
 
 INSTALLED_APPS = [
-    "channels",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,6 +48,11 @@ INSTALLED_APPS = [
     'rest_framework',
     "corsheaders",
     "api",
+    "api.accounts.apps.AccountsConfig",
+    "api.auth.apps.AuthConfig",
+    "api.vehicle.apps.VehicleConfig",
+    "api.client.apps.ClientConfig",
+    "api.rent.apps.RentConfig",
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
@@ -105,16 +109,6 @@ DATABASES = {
         "ATOMIC_REQUESTS": True,
     }
 }
-# Configuração do Redis com o Channels
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
-        },
-    },
-}
-
 # Configurações do MongoDB
 
 MONGO_USERNAME = os.getenv("MONGO_USERNAME", default="")
@@ -155,8 +149,11 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
+# Diretório onde os arquivos estáticos serão coletados
+STATIC_URL = "static/"
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
 
-STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -181,19 +178,33 @@ REST_FRAMEWORK = {
     ),
 }
 
+# SIMPLE_JWT = {
+#     "SLIDING_TOKEN_LIFETIME": timedelta(days=1),
+#     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=2),
+#     'CANCEL_TOKEN_LIFETIME': timedelta(days=15),
+#     'ROTATE_REFRESH_TOKENS': True,
+#     'BLACKLIST_AFTER_ROTATION': True,
+#     'UPDATE_LAST_LOGIN': True,
+#     'ALGORITHM': 'HS256',
+#     'AUTH_HEADER_TYPES': ('Bearer',),
+#     'AUTH_USER_MODEL': 'accounts.User',
+#     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+#     'USER_ID_FIELD': 'id',
+#     'USER_ID_CLAIM': 'user_id',
+# }
+
 SIMPLE_JWT = {
-    "SLIDING_TOKEN_LIFETIME": timedelta(days=1),
-    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=2),
-    'CANCEL_TOKEN_LIFETIME': timedelta(days=15),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
-    'UPDATE_LAST_LOGIN': True,
-    'ALGORITHM': 'HS256',
-    'AUTH_HEADER_TYPES': ('Bearer',),
-    'AUTH_USER_MODEL': 'api.User',
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=24),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=8),
+    "CANCEL_TOKEN_LIFETIME": timedelta(days=15),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ALGORITHM": "HS256",
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "AUTH_USER_MODEL": "api.accounts.User",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
 }
 
 SPECTACULAR_SETTINGS = {
