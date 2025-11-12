@@ -36,12 +36,9 @@ ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'api.accounts.User'
 
-ASGI_APPLICATION = "core.asgi.application"
-
 # Application definition
 
 INSTALLED_APPS = [
-    "channels",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -112,16 +109,6 @@ DATABASES = {
         "ATOMIC_REQUESTS": True,
     }
 }
-# Configuração do Redis com o Channels
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
-        },
-    },
-}
-
 # Configurações do MongoDB
 
 MONGO_USERNAME = os.getenv("MONGO_USERNAME", default="")
