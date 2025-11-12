@@ -1,4 +1,4 @@
-from adapters.api.config.mongo import connection
+from api.config.mongodb.connection import DBConnectionMongoHandler
 from pymongo.errors import PyMongoError
 from django.utils import timezone
 
@@ -12,7 +12,7 @@ class MongoAdapter:
     def __init__(self, collection_name: str):
         try:
             # Acessa a conexão com o banco de dados e a collection.
-            db_handler = connection.DBConnectionMongoHandler().get_db_connection()
+            db_handler = DBConnectionMongoHandler().get_db_connection()
             self.collection = db_handler.get_collection(collection_name)
         except PyMongoError as e:
             raise ConnectionError(f"Erro ao conectar ao MongoDB: {e}")
