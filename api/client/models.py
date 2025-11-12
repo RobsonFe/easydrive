@@ -1,7 +1,7 @@
 from uuid import uuid4
 from django.db import models
-from rent.models import Rental
 from accounts.models import User
+
 
 class Client(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
@@ -13,4 +13,5 @@ class Client(models.Model):
     
     @property
     def total_rentals_count(self):
+        from rent.models import Rental
         return Rental.objects.filter(client=self).count()
