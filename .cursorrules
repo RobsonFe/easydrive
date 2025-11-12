@@ -2,21 +2,23 @@
 
 ## Stack e Arquitetura
 - Python 3.x, Django 5.1.1, Django Rest Framework 3.15.2
-- PostgreSQL (principal), MongoDB (logs), Redis (WebSocket), Channels
+- PostgreSQL (principal), MongoDB (logs)
 - API RESTful para gerenciamento de usuários, clientes, veículos e aluguéis
-- Autenticação JWT, logs centralizados, notificações em tempo real
+- Autenticação JWT, logs centralizados
+- Arquitetura modular por domínio
 
-## Estrutura de Diretórios
-- `core/`: Configurações Django (settings, urls, asgi, wsgi)
-- `api/model/`: Modelos de domínio (User, Client, Vehicle, Rental)
-- `api/serializers/`: Serializers DRF
-- `api/views/`: Views baseadas em GenericAPIView
-- `api/build/`: Builders (Padrão Builder) - OBRIGATÓRIO
+## Estrutura de Diretórios (Arquitetura Modular)
+- `core/`: Configurações Django (settings, urls, wsgi)
+- `api/accounts/`: Módulo de Contas (User model, views, serializers, services)
+- `api/auth/`: Módulo de Autenticação (signin, signup, signout)
+- `api/client/`: Módulo de Clientes (Client model, views, serializers)
+- `api/vehicle/`: Módulo de Veículos (Vehicle model, views, serializers)
+- `api/rent/`: Módulo de Aluguéis (Rental model, views, serializers)
 - `api/repositories/`: Adaptadores MongoDB (sync/async)
 - `api/middleware/`: Middleware customizado
 - `api/swagger/`: Documentação Swagger/OpenAPI
-- `api/consumers.py`: WebSocket consumers
-- `api/routing.py`: Rotas WebSocket
+- `api/config/mongodb/`: Configurações MongoDB (connection handlers)
+- `api/utils/`: Utilitários (hooks, helpers)
 
 ## 🔴 REGRAS FUNDAMENTAIS (OBRIGATÓRIAS)
 
@@ -40,24 +42,35 @@
 - ✅ SEMPRE otimizar list views com select_related/prefetch_related
 
 ## Models (Django)
-- Localização: `api/model/`
-- UUID como PK para models principais (exceto User)
+- Localização: Cada módulo tem seu próprio `models.py` (api.accounts.models, api.client.models, etc.)
+- UUID como PK para models principais (exceto User que usa int)
 - Incluir created_at e updated_at quando apropriado
 - Implementar __str__() retornando representação legível
 - Lógica de negócio no método save() quando necessário
 - Docstrings obrigatórias com Attributes
 
+**Models Principais:**
+- `api.accounts.models.User` - Usuário do sistema (AbstractBaseUser, USERNAME_FIELD = 'email')
+- `api.client.models.Client` - Cliente (OneToOne com User, UUID PK)
+- `api.vehicle.models.Vehicle` - Veículo (UUID PK, TypeVehicle: Carro/Moto)
+- `api.rent.models.Rental` - Aluguel (FK para Client e Vehicle, UUID PK)
+
 ## Views (DRF)
-- Preferir: generics.CreateAPIView, ListAPIView, UpdateAPIView, DestroyAPIView
+- Preferir: generics.CreateAPIView, ListAPIView, UpdateAPIView, DestroyAPIView, RetrieveAPIView, APIView
 - Permissões:
-  - AllowAny: Apenas para criação de usuário e login
+  - AllowAny: Apenas para signup e login
   - IsAuthenticated: Padrão para todos os endpoints protegidos
 - SEMPRE declarar permission_classes explicitamente
 - SEMPRE declarar serializer_class e queryset
 - SEMPRE usar select_related()/prefetch_related() em list views
-- Usar builders para criação de objetos (OBRIGATÓRIO)
+- Criar objetos diretamente usando Model.objects.create() ou Model.objects.create_user()
 - Retornar Response com mensagens claras
 - Sobrescrever métodos HTTP (post, get, patch, delete) para lógica customizada
+
+**Service Layer:**
+- Usar camada de serviço para lógica de negócio complexa
+- Services em `{module}/service.py`
+- Exemplos: `UserService` (api.accounts.service), `AuthenticationService` (api.auth.service)
 
 ## Serializers (DRF)
 - Usar ModelSerializer sempre que possível
@@ -67,47 +80,96 @@
 - Serializers aninhados para relacionamentos (read-only)
 - Validações no serializer, NÃO na view
 
-## Builders (Padrão Builder) - OBRIGATÓRIO
-- Localização: `api/build/`
-- Uso Obrigatório: Para criação de User, Client, Vehicle, Rental
-- Métodos set_<field>() retornam self para fluência
-- Método build() cria e retorna o objeto
-- Validações básicas no build()
-- Docstrings com exemplos de uso
+**Serializers Principais:**
+- `UserSerializer` - Serialização de usuário (com avatar)
+- `UserUpdateSerializer` - Atualização de usuário (com validação de email)
+- `ClientSerializer` - Serialização de cliente (com user_data aninhado)
+- `ClientDetailsSerializer` - Detalhes completos do cliente
+- `VehicleSerializer` - Serialização de veículo
+- `RentSerializer` - Criação de aluguel
+- `RentListSerializer` - Listagem com dados aninhados (client_data, vehicle_data)
+- `RentServiceUpdateSerializer` - Atualização (devolução)
 
 ## Repositories (MongoDB)
 - Localização: `api/repositories/`
 - Usar MongoAdapter (sync) ou AsyncMongoAdapter (async)
-- Métodos: find_one, find_many, insert_one, update_one, delete_one, aggregate
+- Métodos: find_one, find_many, insert_one, update_one, delete_one, aggregate, count_documents
 - Usa Null Object Pattern para falhas de conexão
 
 ## Middleware
 - LogErroMiddleware: Captura erros automáticos e salva no MongoDB
 - Respeitar ordem no settings.MIDDLEWARE
 - Sanitização: Remove dados sensíveis (passwords, tokens) dos logs
-
-## WebSocket (Channels)
-- Consumer: Herdar de AsyncWebsocketConsumer
-- Métodos: connect(), disconnect(), receive(), send_notification()
-- Groups: Usar channel_layer.group_send() para broadcast
-- Routing: Definir em api/routing.py
+- Localização: `api/middleware/middlewares.py`
 
 ## Documentação Swagger
 - Usar @extend_schema do drf-spectacular
 - Tags: Categorizar endpoints por domínio
 - Examples: Fornecer exemplos de request/response
 - Filters: Usar hook filter_endpoints_by_allowed_tags
+- Mixins disponíveis: `UserCreateSwaggerMixin` (api.swagger.user_mixin)
 
 ## Autenticação e Segurança
 - JWT: djangorestframework-simplejwt
-- Endpoints: /api/token/, /api/token/refresh/, /api/v1/login/, /api/v1/logout/
+- Endpoints: 
+  - `/api/token/` - Obter access/refresh tokens (padrão DRF)
+  - `/api/token/refresh/` - Renovar access token
+  - `/api/v1/login` - Login customizado (SignInView)
+  - `/api/v1/signup` - Cadastro de usuário (SignUpView)
+  - `/api/v1/logout` - Logout com blacklist (SignOutView)
 - Headers: Authorization: Bearer <access_token>
 - Tokens rotativos com blacklist habilitado
+- Access token: 24 horas
+- Refresh token: 8 dias
+- User Model: `api.accounts.User` (AbstractBaseUser, USERNAME_FIELD = 'email')
 
 ## Variáveis de Ambiente
 - Sempre usar .env para configurações sensíveis
 - PostgreSQL: NOME_DO_BANCO, USUARIO_DO_BANCO, SENHA_DO_BANCO, HOST_DO_BANCO, PORTA_DO_BANCO
 - MongoDB: MONGO_USERNAME, MONGO_PASSWORD, MONGO_HOST, MONGO_DB_NAME
+
+## Arquitetura Modular
+
+O projeto está organizado em módulos por domínio:
+
+1. **api.accounts** - Gerenciamento de usuários
+   - `models.py` - User (AbstractBaseUser)
+   - `serializer.py` - UserSerializer, UserUpdateSerializer
+   - `views.py` - UserView (GET, PATCH)
+   - `service.py` - UserService (lógica de negócio)
+   - `validation.py` - UserValidatorMixin
+   - `urls.py` - Rotas do módulo
+
+2. **api.auth** - Autenticação
+   - `views.py` - SignInView, SignUpView, SignOutView
+   - `service.py` - AuthenticationService
+   - `validations.py` - SiginValidationMixin
+   - `types.py` - Type hints (TypedDict)
+   - `urls.py` - Rotas do módulo
+
+3. **api.client** - Gerenciamento de clientes
+   - `models.py` - Client (UUID PK)
+   - `serializer.py` - ClientSerializer, ClientDetailsSerializer
+   - `views.py` - Views CRUD de cliente
+   - `urls.py` - Rotas do módulo
+
+4. **api.vehicle** - Gerenciamento de veículos
+   - `models.py` - Vehicle, TypeVehicle (UUID PK)
+   - `serializer.py` - VehicleSerializer
+   - `views.py` - Views CRUD de veículo
+   - `urls.py` - Rotas do módulo
+
+5. **api.rent** - Gerenciamento de aluguéis
+   - `models.py` - Rental (UUID PK)
+   - `serializer.py` - RentSerializer, RentListSerializer, RentServiceUpdateSerializer
+   - `views.py` - Views CRUD de aluguel
+   - `urls.py` - Rotas do módulo
+
+**Ordem de dependências no INSTALLED_APPS:**
+1. `api.accounts` (base - define User)
+2. `api.vehicle` (sem dependências de outros módulos)
+3. `api.client` (depende de accounts)
+4. `api.rent` (depende de vehicle e client)
 
 ## Checklist de Implementação (SEMPRE VERIFICAR)
 Antes de criar qualquer código:
@@ -120,20 +182,40 @@ Antes de criar qualquer código:
 - [ ] Tratamento de exceções adequado
 - [ ] Código PEP 8 compliant
 - [ ] Nomes descritivos e autoexplicativos
-- [ ] Builders usados para criação de objetos
+- [ ] Criar objetos diretamente (Model.objects.create() ou Model.objects.create_user())
+- [ ] Usar Service Layer para lógica de negócio complexa
+- [ ] Respeitar arquitetura modular (cada domínio em seu módulo)
 - [ ] Testes automatizados para novas funcionalidades
 
 ## Lembretes Críticos
 1. SEMPRE usar docstrings, nunca comentários inline
 2. SEMPRE otimizar queries com select_related/prefetch_related
-3. SEMPRE usar builders para criação de objetos
+3. SEMPRE criar objetos diretamente (sem Builders)
 4. SEMPRE declarar permissões explicitamente nas views
 5. SEMPRE fazer validações no serializer, não na view
 6. NUNCA causar N+1 queries
 7. NUNCA adicionar funcionalidades além do pedido
 8. SEMPRE escrever testes automatizados para novas funcionalidades
+9. SEMPRE usar Service Layer para lógica de negócio complexa
+10. SEMPRE respeitar a arquitetura modular (cada domínio em seu módulo)
+
+## Padrões de Projeto
+
+### Repository Pattern
+- `MongoAdapter` (síncrono) - `api/repositories/mongo_adapter.py`
+- `AsyncMongoAdapter` (assíncrono) - `api/repositories/async_mongo_adapter.py`
+- Métodos: find_one, find_many, insert_one, update_one, delete_one, aggregate, count_documents
+
+### Null Object Pattern
+- `NullCollection`, `NullDBConnection` - Resiliência para falhas de conexão MongoDB
+- `AsyncNullCollection`, `AsyncNullDBConnection` - Versões assíncronas
+- Localização: `api/config/mongodb/connection.py` e `async_connection.py`
+
+### Service Layer Pattern
+- `UserService` - `api/accounts/service.py` (gerenciamento de avatar)
+- `AuthenticationService` - `api/auth/service.py` (signin/signup)
 
 ## Referências
 - Arquivo completo: `.github/copilot-instructions.md`
 - Resumo rápido: `api/docs/pedindo_para_ia/REGRAS_PROJETO.md`
-
+- README: `README.md`
