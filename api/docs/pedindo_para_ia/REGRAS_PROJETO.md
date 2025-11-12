@@ -172,17 +172,28 @@ mongo.save_error(user, endpoint, method, error, payload)
 **🚨 CRÍTICO - SEMPRE OTIMIZAR:**
 
 ```python
-# ❌ ERRADO - Causa N+1
+# ❌ ERRADO - Causa N+1 queries ao acessar client.user ou vehicle
 queryset = Rental.objects.all()
 
-# ✅ CORRETO - Otimizado
-queryset = Rental.objects.select_related(
-    'client__user', 
-    'vehicle'
-).prefetch_related(
-    'vehicle__category'
-).order_by('start_date')
+# ✅ CORRETO - Otimizado com select_related
+def get_queryset(self):
+    """
+    Retorna queryset otimizado com select_related.
+    
+    Returns:
+        QuerySet de Rental com relacionamentos otimizados.
+    """
+    return Rental.objects.select_related(
+        'client__user',  # Otimiza acesso a Client e User (ForeignKey -> OneToOne)
+        'vehicle'        # Otimiza acesso a Vehicle (ForeignKey)
+    ).order_by('-start_date')
 ```
+
+**Relacionamentos no Projeto:**
+- `Rental.client` → `Client` (ForeignKey com related_name='rentals')
+- `Rental.vehicle` → `Vehicle` (ForeignKey com related_name='rentals')
+- `Client.user` → `User` (OneToOneField)
+- Cadeia: `Rental → Client → User`
 
 **SEMPRE usar em list views:**
 - `select_related()` para ForeignKeys

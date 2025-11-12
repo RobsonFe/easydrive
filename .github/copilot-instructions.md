@@ -143,22 +143,28 @@ class Vehicle(models.Model):
 
 **Exemplo:**
 ```python
-class VehicleListView(generics.ListAPIView):
+class RentListView(generics.ListAPIView):
     """
-    View para listar todos os veículos disponíveis.
+    View para listagem de aluguéis.
     
-    Retorna lista paginada de veículos ordenados por marca.
-    Requer autenticação.
+    Retorna lista paginada de aluguéis com dados aninhados
+    de cliente e veículo. Otimizada com select_related para
+    evitar N+1 queries.
     """
     permission_classes = [IsAuthenticated]
-    queryset = Vehicle.objects.all().order_by('brand')
-    serializer_class = VehicleSerializer
+    serializer_class = RentListSerializer
 
     def get_queryset(self):
         """
-        Otimiza queryset com select_related para evitar N+1.
+        Retorna queryset otimizado com select_related.
+        
+        Returns:
+            QuerySet de Rental com relacionamentos otimizados.
         """
-        return super().get_queryset()
+        return Rental.objects.select_related(
+            'client__user',  # Otimiza acesso a Client e User
+            'vehicle'         # Otimiza acesso a Vehicle
+        ).order_by('-start_date')
 ```
 
 ### **Serializers (DRF):**
@@ -251,18 +257,55 @@ mongo.save_error(user, endpoint, method, error, payload)
 **🚨 CRÍTICO - EVITAR N+1:**
 
 ```python
-# ❌ ERRADO - Causa N+1
+# ❌ ERRADO - Causa N+1 queries ao acessar client.user ou vehicle
 class RentListView(generics.ListAPIView):
     queryset = Rental.objects.all()
     
-# ✅ CORRETO - Otimizado
+# ✅ CORRETO - Otimizado com select_related
 class RentListView(generics.ListAPIView):
-    queryset = Rental.objects.select_related(
-        'client__user', 
-        'vehicle'
-    ).prefetch_related(
-        'vehicle__category'
-    ).order_by('start_date')
+    permission_classes = [IsAuthenticated]
+    serializer_class = RentListSerializer
+    
+    def get_queryset(self):
+        """
+        Retorna queryset otimizado com select_related.
+        
+        Returns:
+            QuerySet de Rental com relacionamentos otimizados.
+        """
+        return Rental.objects.select_related(
+            'client__user',  # Otimiza acesso a Client e User
+            'vehicle'         # Otimiza acesso a Vehicle
+        ).order_by('-start_date')
+```
+
+**Relacionamentos e Serializers Aninhados:**
+
+```python
+# Serializer usando relacionamentos ForeignKey
+class RentListSerializer(serializers.ModelSerializer):
+    """
+    Serializer para listagem de aluguéis com dados aninhados.
+    
+    Inclui informações completas do cliente e veículo usando
+    relacionamentos ForeignKey.
+    """
+    client_data = ClientDetailsSerializer(source='client', read_only=True)
+    vehicle_data = VehicleSerializer(source='vehicle', read_only=True)
+
+    class Meta:
+        model = Rental
+        fields = [
+            'id',
+            'start_date',
+            'end_date',
+            'returned',
+            'client_data',
+            'vehicle_data',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = fields
 ```
 
 ### **Middleware:**

@@ -86,9 +86,15 @@
 - `ClientSerializer` - Serialização de cliente (com user_data aninhado)
 - `ClientDetailsSerializer` - Detalhes completos do cliente
 - `VehicleSerializer` - Serialização de veículo
-- `RentSerializer` - Criação de aluguel
-- `RentListSerializer` - Listagem com dados aninhados (client_data, vehicle_data)
-- `RentServiceUpdateSerializer` - Atualização (devolução)
+- `RentSerializer` - Criação de aluguel (com validações de data e disponibilidade)
+- `RentListSerializer` - Listagem com dados aninhados usando relacionamentos (client_data, vehicle_data)
+- `RentDetailSerializer` - Detalhes completos com dados aninhados
+- `RentServiceUpdateSerializer` - Atualização (devolução) com validações
+
+**Uso de Relacionamentos em Serializers:**
+- Serializers aninhados usam `source='client'` e `source='vehicle'` para acessar ForeignKeys
+- Campos read_only para dados aninhados: `client_data = ClientDetailsSerializer(source='client', read_only=True)`
+- Validações de relacionamentos no método `validate()` do serializer
 
 ## Repositories (MongoDB)
 - Localização: `api/repositories/`

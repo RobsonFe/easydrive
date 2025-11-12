@@ -464,10 +464,12 @@ Authorization: Bearer {access_token}
       "id": "15ebca20-a279-42cf-9528-94286e38b125",
       "start_date": "01-11-2024",
       "end_date": "02-11-2024",
+      "returned": true,
       "client_data": {
         "id": "5191d544-20b2-47bf-885a-9f8772daf3b8",
+        "user": 2,
         "total_rentals": 5,
-        "user_data": {
+        "client_data": {
           "id": 2,
           "email": "joao@example.com",
           "name": "João Silva",
@@ -480,10 +482,57 @@ Authorization: Bearer {access_token}
         "model": "Corolla",
         "year": 2023,
         "quantity": 8,
+        "type_vehicle": "Carro",
+        "description": "Veículo sedan econômico",
         "is_available": true
-      }
+      },
+      "created_at": "2024-11-01T10:00:00Z",
+      "updated_at": "2024-11-02T15:30:00Z"
     }
   ]
+}
+```
+
+#### Detalhes do Aluguel
+
+```http
+GET /api/v1/rent/detail/{uuid}/
+Authorization: Bearer {access_token}
+```
+
+**Resposta (200 OK):**
+
+```json
+{
+  "id": "15ebca20-a279-42cf-9528-94286e38b125",
+  "start_date": "01-11-2024",
+  "end_date": "02-11-2024",
+  "returned": true,
+  "client": "5191d544-20b2-47bf-885a-9f8772daf3b8",
+  "vehicle": "be5fa173-7ee2-4137-b3ca-1a18d6726c1f",
+  "client_data": {
+    "id": "5191d544-20b2-47bf-885a-9f8772daf3b8",
+    "user": 2,
+    "total_rentals": 5,
+    "client_data": {
+      "id": 2,
+      "email": "joao@example.com",
+      "name": "João Silva",
+      "avatar": null
+    }
+  },
+  "vehicle_data": {
+    "id": "be5fa173-7ee2-4137-b3ca-1a18d6726c1f",
+    "brand": "Toyota",
+    "model": "Corolla",
+    "year": 2023,
+    "quantity": 8,
+    "type_vehicle": "Carro",
+    "description": "Veículo sedan econômico",
+    "is_available": true
+  },
+  "created_at": "2024-11-01T10:00:00Z",
+  "updated_at": "2024-11-02T15:30:00Z"
 }
 ```
 
@@ -506,10 +555,34 @@ Content-Type: application/json
   "message": "Baixar no aluguel realizado com sucesso!",
   "result": {
     "id": "5adb384a-5e82-44cc-8fd7-11e73ef2074e",
+    "start_date": "26-11-2024",
     "end_date": "30-11-2024",
     "returned": true,
     "client": "0d4c67db-954d-466b-b4ea-2d9b137c4c3f",
-    "vehicle": "0e59edda-1ef4-49cd-b05f-85603fbafa1e"
+    "vehicle": "0e59edda-1ef4-49cd-b05f-85603fbafa1e",
+    "client_data": {
+      "id": "0d4c67db-954d-466b-b4ea-2d9b137c4c3f",
+      "user": 1,
+      "total_rentals": 1,
+      "client_data": {
+        "id": 1,
+        "email": "joao@example.com",
+        "name": "João Silva",
+        "avatar": null
+      }
+    },
+    "vehicle_data": {
+      "id": "0e59edda-1ef4-49cd-b05f-85603fbafa1e",
+      "brand": "Toyota",
+      "model": "Corolla",
+      "year": 2024,
+      "quantity": 5,
+      "type_vehicle": "Carro",
+      "description": "Veículo sedan econômico",
+      "is_available": true
+    },
+    "created_at": "2024-11-26T10:00:00Z",
+    "updated_at": "2024-11-30T15:30:00Z"
   }
 }
 ```
@@ -657,6 +730,39 @@ Middleware `LogErroMiddleware` captura automaticamente:
 - Blacklist habilitado para logout seguro
 - Access token válido por 24 horas
 - Refresh token válido por 8 dias
+
+### 5. Relacionamentos e Otimizações de Performance
+
+O módulo `api.rent` utiliza relacionamentos ForeignKey para acessar dados de `Client` e `Vehicle`:
+
+**Relacionamentos:**
+- `Rental.client` → `Client` (ForeignKey com `related_name='rentals'`)
+- `Rental.vehicle` → `Vehicle` (ForeignKey com `related_name='rentals'`)
+- `Client.user` → `User` (OneToOneField)
+- Cadeia de relacionamentos: `Rental → Client → User`
+
+**Otimizações de Performance:**
+- Todas as views de listagem usam `select_related('client__user', 'vehicle')` para evitar N+1 queries
+- Serializers aninhados (`RentListSerializer`, `RentDetailSerializer`) utilizam relacionamentos para incluir dados completos
+- Validações de negócio (disponibilidade, datas) implementadas nos serializers
+
+**Exemplo de Otimização:**
+```python
+def get_queryset(self):
+    """
+    Retorna queryset otimizado com select_related.
+    """
+    return Rental.objects.select_related(
+        'client__user',  # Otimiza acesso a Client e User
+        'vehicle'        # Otimiza acesso a Vehicle
+    ).order_by('-start_date')
+```
+
+**Validações Automáticas:**
+- Data de início não pode ser no passado
+- Veículo deve estar disponível (quantity > 0)
+- Data de devolução não pode ser anterior à data de início
+- Aluguel já devolvido não pode ser atualizado
 
 ---
 
