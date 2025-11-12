@@ -5,10 +5,6 @@ import rest_framework.authtoken
 import rest_framework.permissions
 from rest_framework.response import Response
 from rest_framework import status
-from api.build.client_builder import ClientBuilder
-from api.build.rent_builder import RentBuilder
-from api.build.user_builder import UserBuilder
-from api.build.vehicle_builder import VehicleBuilder
 from api.exepctions.constants.validation_request import ValidationRequest
 from api.swagger.user_mixin import UserCreateSwaggerMixin
 from api.model.client_model import Client
@@ -55,16 +51,15 @@ class UserCreateView(UserCreateSwaggerMixin, generics.CreateAPIView):
 
             self.validate.validation_create(email, username, cpf)
 
-            builder = UserBuilder()
-            user = (builder
-                    .set_username(username)
-                    .set_name(name)
-                    .set_email(email)
-                    .set_password(password)
-                    .set_cpf(cpf)
-                    .set_address(address)
-                    .set_phone(phone)
-                    .build())
+            user = User.objects.create_user(
+                username=username,
+                name=name,
+                email=email,
+                password=password,
+                cpf=cpf,
+                address=address,
+                phone=phone
+            )
 
             serializer = self.get_serializer(user)
 
@@ -143,12 +138,9 @@ class ClientCreateView(generics.CreateAPIView):
         except Exception as e:
             return Response({"message": "Erro ao criar cliente!", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        builder = ClientBuilder()
-
-        client = (
-            builder.set_user(user)
-            .set_total_rentals(0)
-            .build()
+        client = Client.objects.create(
+            user=user,
+            total_rentals=0
         )
 
         serializer = self.get_serializer(client)
@@ -256,14 +248,12 @@ class RentCreateView(generics.CreateAPIView):
 
             _vehicle.save()
 
-            builder = RentBuilder()
-            rental = (builder
-                      .set_client(_client)
-                      .set_vehicle(_vehicle)
-                      .set_start_date(start_date)
-                      .build())
-
-            rental.save()
+            rental = Rental.objects.create(
+                client=_client,
+                vehicle=_vehicle,
+                start_date=start_date,
+                returned=False
+            )
 
             serializer = self.get_serializer(rental)
 
@@ -439,19 +429,14 @@ class VehicleCreateView(generics.CreateAPIView):
                 serializer = self.get_serializer(existing_vehicles, many=True)
                 return Response({"message": "Modelo já registrado.", "result": serializer.data}, status=status.HTTP_200_OK)
 
-            builder = VehicleBuilder()
-
-            vehicle = (
-                builder.set_brand(brand)
-                .set_model(model)
-                .set_year(year)
-                .set_quantity(quantity)
-                .set_type_vehicle(type_vehicle)
-                .set_description(description)
-                .build()
+            vehicle = Vehicle.objects.create(
+                brand=brand,
+                model=model,
+                year=year,
+                quantity=quantity,
+                type_vehicle=type_vehicle,
+                description=description
             )
-
-            vehicle.save()
 
             serializer = self.get_serializer(vehicle)
 
