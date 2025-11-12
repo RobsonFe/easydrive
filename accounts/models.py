@@ -40,6 +40,27 @@ class User(AbstractBaseUser):
         unique=True,
         help_text="Email do usuário (usado para login)"
     )
+    cpf = models.CharField(
+        max_length=14,
+        unique=True,
+        help_text="CPF do usuário"
+    )
+    address = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Endereço do usuário"
+    )
+    phone = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text="Telefone do usuário"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(
         default=False,
         help_text="Indica se o usuário é superusuário (admin)"
@@ -48,16 +69,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['name', 'cpf', 'email']
 
-    def has_perm(self, perm, obj=None):
-        return True
-
-    def has_module_perms(self, app_label):
-        return True
-
-    @property
-    def is_staff(self):
-        return self.is_superuser
-
-    class Meta:
-        db_table = 'users'
+    def __str__(self):
+        return f'{self.name} - {self.email} - {self.cpf}'
