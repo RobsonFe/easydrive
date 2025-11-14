@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from vehicle.models import TypeVehicle, Vehicle
+from api.vehicle.models import TypeVehicle, Vehicle
 
 class VehicleSerializer(serializers.ModelSerializer):
     type_vehicle = serializers.ChoiceField(

@@ -34,7 +34,7 @@ APPEND_SLASH = True
 
 ALLOWED_HOSTS = []
 
-AUTH_USER_MODEL = 'api.accounts.User'
+AUTH_USER_MODEL = 'accounts.User'
 
 # Application definition
 
@@ -202,7 +202,7 @@ SIMPLE_JWT = {
     "ALGORITHM": "HS256",
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
-    "AUTH_USER_MODEL": "api.accounts.User",
+    "AUTH_USER_MODEL": "accounts.User",
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
 }

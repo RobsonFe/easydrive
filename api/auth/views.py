@@ -4,7 +4,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from api.accounts.serializer import UserSerializer
 from rest_framework.response import Response
-from auth.validations import SiginValidationMixin
+from .validations import SiginValidationMixin
 from rest_framework.views import APIView
 from .service import AuthenticationService
 from rest_framework import status

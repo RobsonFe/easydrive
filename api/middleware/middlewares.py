@@ -48,7 +48,7 @@ class LogErroMiddleware(MiddlewareMixin):
             collection_name="erros"
         )
 
-        user = request.user.username if request.user.is_authenticated else "Usuário deslogado"
+        user = request.user.email if request.user.is_authenticated else "Usuário deslogado"
         endpoint = request.path
         method = request.method
         
@@ -71,7 +71,7 @@ class LogErroMiddleware(MiddlewareMixin):
                 collection_name="erros"
             )
 
-            user = request.user.username if request.user.is_authenticated else "Usuário deslogado"
+            user = request.user.email if request.user.is_authenticated else "Usuário deslogado"
             endpoint = request.path
             method = request.method
             try:

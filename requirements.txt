@@ -25,6 +25,7 @@ pyOpenSSL==25.0.0
 python-dotenv==1.0.1
 pytz==2025.1
 PyYAML==6.0.2
+Pillow==11.0.0
 referencing==0.36.2
 rpds-py==0.22.3
 setuptools==78.1.0

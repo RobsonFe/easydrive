@@ -1,7 +1,7 @@
 from django.contrib.auth.hashers import check_password
 from api.accounts.models import User
 from api.exceptions import ValidationError
-from auth.types import SiginDataType, UserDataType
+from api.auth.types import SiginDataType, UserDataType
 
 
 class AuthenticationService:

@@ -1,6 +1,6 @@
 
 from api.exceptions import ValidationError
-from auth.types import SiginDataType, UserDataType
+from api.auth.types import SiginDataType, UserDataType
 
 
 class SiginValidationMixin:

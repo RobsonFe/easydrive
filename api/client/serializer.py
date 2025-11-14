@@ -1,52 +1,35 @@
-
 from rest_framework import serializers
-from client.models import Client
-from vehicle.models import TypeVehicle
+from api.client.models import Client
 from api.accounts.serializer import UserSerializer
 
 
+class ClientSerializer(serializers.ModelSerializer):
+    """
+    Serializer para serialização de cliente com dados do usuário aninhados.
+    
+    Attributes:
+        user_data: Dados completos do usuário associado ao cliente.
+    """
+    user_data = UserSerializer(source='user', read_only=True)
+
+    class Meta:
+        model = Client
+        fields = ['id', 'total_rentals', 'user_data']
+        read_only_fields = ['id', 'total_rentals']
+
+
 class ClientDetailsSerializer(serializers.ModelSerializer):
-    client_data = UserSerializer(source='user')
+    """
+    Serializer para detalhes completos do cliente.
+    
+    Inclui o ID do usuário e dados completos do usuário aninhados.
+    
+    Attributes:
+        client_data: Dados completos do usuário associado ao cliente.
+    """
+    client_data = UserSerializer(source='user', read_only=True)
 
     class Meta:
         model = Client
         fields = ['id', 'user', 'total_rentals', 'client_data']
-
-
-    user_data = UserSerializer(source='user')
-
-    class Meta:
-        fields = ['id', 'total_rentals', 'user_data']
-
-
-class RentSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = '__all__'
-
-
-class VehicleSerializer(serializers.ModelSerializer):
-    type_vehicle = serializers.ChoiceField(
-        choices=TypeVehicle.choices, default=TypeVehicle.CAR)
-
-    class Meta:
-        fields = ['id', 'brand', 'model', 'year', 'quantity',
-                  'type_vehicle', 'description', 'is_available']
-        extra_kwargs = {'is_available': {'read_only': True}}
-
-
-class RentListSerializer(serializers.ModelSerializer):
-    client_data = ClientDetailsSerializer(source='client')
-    vehicle_data = VehicleSerializer(source='vehicle')
-
-    class Meta:
-        fields = ['id', 'start_date', 'end_date',
-                  'client_data', 'vehicle_data']
-
-
-class RentServiceUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = ['id', 'end_date', 'returned', 'client', 'vehicle']
-        extra_kwargs = {
-            'client': {'read_only': True},
-            'vehicle': {'read_only': True},
-        }
+        read_only_fields = ['id', 'total_rentals']

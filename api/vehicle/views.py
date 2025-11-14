@@ -1,11 +1,14 @@
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
-from api.model.vehicle_model import TypeVehicle, Vehicle
+from api.vehicle.models import TypeVehicle, Vehicle
 import json
+import logging
 from rest_framework.permissions import IsAuthenticated
 
-from client.serializer import VehicleSerializer
+from api.vehicle.serializer import VehicleSerializer
+
+logger = logging.getLogger(__name__)
 
 class VehicleListView(generics.ListAPIView):
 

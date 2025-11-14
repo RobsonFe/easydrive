@@ -2,8 +2,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
-from client.serializer import ClientDetailsSerializer, ClientSerializer
-from client.models import Client
+from api.client.serializer import ClientDetailsSerializer, ClientSerializer
+from api.client.models import Client
 from api.accounts.models import User
 
 class ClientCreateView(generics.CreateAPIView):

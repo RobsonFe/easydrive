@@ -1,5 +1,5 @@
 from django.urls import path
-from client.views import ClientCreateView, ClientDeleteView, ClientDetailView, ClientListView, ClientWithUserView
+from api.client.views import ClientCreateView, ClientDeleteView, ClientDetailView, ClientListView, ClientWithUserView
 
 
 urlpatterns = [

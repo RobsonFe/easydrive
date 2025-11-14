@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 
 class UserManager(BaseUserManager):
@@ -14,18 +14,30 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password):
-        user = self.model(
-            email=self.normalize_email(email),
-        )
+    def create_superuser(self, email, password, **extra_fields):
+        """
+        Cria e salva um superusuário com os campos obrigatórios.
+        
+        Args:
+            email: Email do superusuário.
+            password: Senha do superusuário.
+            **extra_fields: Campos adicionais (name, cpf, etc.).
+            
+        Returns:
+            Instância do usuário criado.
+        """
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superusuário deve ter is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superusuário deve ter is_superuser=True.')
+        
+        return self.create_user(email, password, **extra_fields)
 
-        user.set_password(password)
-        user.is_superuser = True
-        user.save(using=self._db)
-        return user
 
-
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, PermissionsMixin):
     avatar = models.ImageField(
         upload_to='avatars/',
         default='avatars/default.png',
@@ -69,7 +81,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['name', 'cpf', 'email']
+    REQUIRED_FIELDS = ['name', 'cpf']
 
     def __str__(self):
         return f'{self.name} - {self.email} - {self.cpf}'
