@@ -1,25 +1,13 @@
 from django.utils.deprecation import MiddlewareMixin
-from api.repositories.mongo_adapter import MongoAdapter
 import json
+from api.utils.save_error import ErrorLogger
 
 
 class LogErroMiddleware(MiddlewareMixin):
-    
-    """
-    Esse Middleware captura erros da aplicação e salva no Redis.
-    É importante que a ordem de função desse Middleware não seja alterada.
-    Seguindo a documentação do Django, a ordem de execução dos Middlewares é a seguinte:
+    """Captura e registra erros e respostas HTTP com falha em MongoDB.
 
-    1. Middleware de requisição
-    2. Middleware de view
-    3. Middleware de resposta
-    4. Middleware de exceção
-    5. Middleware de terminação
-
+    A ordem de execução dos middlewares segue a documentação oficial do Django.
     Referência: https://docs.djangoproject.com/en/5.1/topics/http/middleware/
-
-    Alterar a ordem de execução dos Middlewares pode causar problemas na aplicação.
-
     """
     
     def process_request(self, request):
@@ -44,7 +32,7 @@ class LogErroMiddleware(MiddlewareMixin):
 
     def process_exception(self, request, exception):
         """Captura exceções reais e salva no MongoDB"""
-        mongo = MongoAdapter(
+        mongo_error_handler = ErrorLogger(
             collection_name="erros"
         )
 
@@ -59,7 +47,7 @@ class LogErroMiddleware(MiddlewareMixin):
 
         payload = getattr(request, '_body_data', None)
 
-        mongo.save_error(user, endpoint, method, error, payload)
+        mongo_error_handler.save_error(user, endpoint, method, error, payload)
 
         return None
 
@@ -67,7 +55,7 @@ class LogErroMiddleware(MiddlewareMixin):
         """Captura respostas HTTP de erro (status >= 400) e salva no MongoDB"""
 
         if response.status_code >= 400:
-            mongo = MongoAdapter(
+            mongo_error_handler = ErrorLogger(
                 collection_name="erros"
             )
 
@@ -84,6 +72,6 @@ class LogErroMiddleware(MiddlewareMixin):
 
             payload = getattr(request, '_body_data', None)
 
-            mongo.save_error(user, endpoint, method, error, payload)
+            mongo_error_handler.save_error(user, endpoint, method, error, payload)
 
         return response

@@ -1,6 +1,5 @@
 from api.config.mongodb.connection import DBConnectionMongoHandler
 from pymongo.errors import PyMongoError
-from django.utils import timezone
 
 class MongoAdapter:
     """
@@ -16,24 +15,6 @@ class MongoAdapter:
             self.collection = db_handler.get_collection(collection_name)
         except PyMongoError as e:
             raise ConnectionError(f"Erro ao conectar ao MongoDB: {e}")
-
-    def save_error(self, user, endpoint, method, error, payload):
-        """
-        Salva um log de erro no banco de dados.
-        """
-        try:
-            log = {
-                "timestamp": timezone.now().isoformat(),
-                "user": user,
-                "endpoint": endpoint,
-                "method": method,
-                "error": error,
-                "payload": payload,
-            }
-            self.collection.insert_one(log)
-            return True
-        except PyMongoError as e:
-            raise RuntimeError(f"Erro ao salvar log de erro: {e}")
 
     # ----------------------------------------
     # Métodos de Leitura (Read)
